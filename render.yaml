@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: xpressprofx
+    env: node
+    buildCommand: npm install -g pnpm && node build.js
+    startCommand: node artifacts/api-server/dist/index.mjs
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 8080

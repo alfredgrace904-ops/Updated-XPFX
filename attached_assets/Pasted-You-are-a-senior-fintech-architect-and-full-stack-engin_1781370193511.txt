@@ -1,0 +1,201 @@
+You are a senior fintech architect and full-stack engineer.
+
+Your task is to take my existing working project and upgrade it into a secure, production-ready hybrid fintech platform called "xpressprofx.com".
+
+The current system already has:
+- API server running (port 8080)
+- Admin panel at /xpadmin
+- Frontend UI working
+- Social media system working
+
+You MUST NOT break existing functionality.
+
+You MUST implement this in strict phases. After completing each phase, STOP and explain what was done, then wait for confirmation before proceeding.
+
+========================================
+
+PHASE 1: DATABASE ARCHITECTURE (Neon PostgreSQL)
+
+- Connect using DATABASE_URL from environment variables
+- Use Prisma ORM (or Drizzle if already used)
+- Design production-grade schema:
+
+Users:
+- id (uuid)
+- email (unique)
+- password_hash
+- role (user/admin)
+- is_verified (boolean)
+- created_at
+
+Wallets:
+- id
+- user_id (FK)
+- balance (decimal, precision safe)
+
+Transactions:
+- id
+- user_id
+- type (deposit, withdrawal)
+- amount
+- status (pending, approved, rejected)
+- reference (unique)
+- metadata (JSON)
+- created_at
+
+AuditLogs:
+- id
+- action
+- user_id
+- admin_id
+- timestamp
+
+========================================
+
+PHASE 2: AUTHENTICATION & AUTHORIZATION
+
+- Build full auth system:
+
+POST /api/auth/register
+POST /api/auth/login
+
+- Use bcrypt for hashing
+- Use JWT (access + refresh tokens)
+- Implement:
+
+Middleware:
+- authenticateUser
+- requireAdmin
+
+- Protect ALL sensitive routes
+
+========================================
+
+PHASE 3: WALLET ENGINE
+
+- Auto-create wallet on registration
+- Ensure ACID-safe balance updates (transactions)
+
+Endpoints:
+GET /api/wallet
+GET /api/wallet/history
+
+========================================
+
+PHASE 4: DEPOSIT SYSTEM (ADMIN APPROVAL MODEL)
+
+User:
+POST /api/deposit
+
+- Creates pending transaction
+
+Admin:
+GET /api/admin/deposits
+PATCH /api/admin/deposits/:id/approve
+PATCH /api/admin/deposits/:id/reject
+
+Approval MUST:
+- Safely increment wallet balance
+- Log action in AuditLogs
+
+========================================
+
+PHASE 5: WITHDRAWAL SYSTEM
+
+User:
+POST /api/withdraw
+
+- Validate:
+  - sufficient balance
+  - prevent race conditions
+
+Admin:
+GET /api/admin/withdrawals
+PATCH /api/admin/withdrawals/:id
+
+- Approve or reject
+
+========================================
+
+PHASE 6: TRANSACTION LEDGER
+
+- Immutable transaction history
+- No deletes allowed
+
+Endpoint:
+GET /api/transactions
+
+========================================
+
+PHASE 7: ADMIN DASHBOARD UPGRADE (/xpadmin)
+
+Add:
+- Users table view
+- Wallet balances
+- Transaction monitor
+- Deposit approvals
+- Withdrawal approvals
+- Activity logs
+
+========================================
+
+PHASE 8: FRONTEND INTEGRATION
+
+Connect frontend to:
+- Auth system
+- Wallet API
+- Deposit/withdraw flows
+- Transaction history
+
+Add:
+- Protected routes
+- Session persistence
+
+========================================
+
+PHASE 9: SECURITY HARDENING
+
+Implement:
+
+- Rate limiting (express-rate-limit)
+- Input validation (Zod)
+- Helmet (HTTP security headers)
+- CORS config
+- SQL injection protection via ORM
+- Environment variable validation
+
+========================================
+
+PHASE 10: PRODUCTION READINESS
+
+- Error handling middleware
+- Logging system (Winston or similar)
+- Clean folder structure:
+
+/controllers
+/routes
+/services
+/db
+/middleware
+
+- Ensure all endpoints tested
+
+========================================
+
+CRITICAL RULES:
+
+- Do NOT overwrite working features
+- Do NOT use mock data
+- All systems must connect to real DB
+- All money logic must be safe and consistent
+- Use async/await properly
+- Comment important logic
+
+========================================
+
+Start with PHASE 1.
+
+After finishing each phase:
+1. Explain what was implemented
+2. Show key files changed
+3. Wait for my confirmation before continuing

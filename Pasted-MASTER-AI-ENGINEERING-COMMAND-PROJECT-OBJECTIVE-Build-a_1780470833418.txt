@@ -1,0 +1,604 @@
+MASTER AI ENGINEERING COMMAND
+
+PROJECT OBJECTIVE
+
+Build and complete the xpressprofx.com website into a professional fintech-standard forex broker, trading, investment, wealth management, and financial services platform.
+
+The existing xpressprofx.com source code is the primary project source and must remain the master codebase.
+
+The provided ApexTrade source code is a secondary reference source that should be reviewed and analyzed for useful improvements, enhancements, design patterns, components, workflows, architecture, UI/UX systems, fintech features, user experience improvements, dashboards, account systems, authentication systems, and investor-facing functionality.
+
+The final deliverable must be a single unified xpressprofx.com project.
+
+ApexTrade must NOT exist as a separate website.
+
+Any useful functionality from ApexTrade should be professionally merged into xpressprofx.com where appropriate.
+
+PHASE 1 — MANDATORY REVIEW BEFORE ANY DEVELOPMENT
+
+Before writing, modifying, deleting, merging, generating, or refactoring any code:
+
+Review ALL uploaded files completely.
+
+Review ALL folders completely.
+
+Review ALL source code completely.
+
+Review ALL assets completely.
+
+Review ALL project dependencies.
+
+Review ALL project configurations.
+
+Review ALL documentation.
+
+Review ALL existing workflows.
+
+Review ALL frontend code.
+
+Review ALL backend code.
+
+Review ALL APIs.
+
+Review ALL database structures.
+
+Review ALL deployment configurations.
+
+Review ALL security implementations.
+
+Review ALL authentication systems.
+
+Review ALL payment systems.
+
+Review ALL dashboard systems.
+
+Review ALL investor systems.
+
+Review ALL trading systems.
+
+Review ALL uploaded ApexTrade source code.
+
+Review ALL instructions provided throughout this conversation.
+
+Do NOT begin development until the review process is completed.
+
+After review, generate a complete audit report showing:
+
+Existing Components
+
+What already exists.
+
+Missing Components
+
+What is missing.
+
+Broken Components
+
+What requires fixing.
+
+Duplicate Components
+
+What requires cleanup.
+
+Security Risks
+
+What requires hardening.
+
+Recommended Improvements
+
+What should be upgraded.
+
+PHASE 2 — IDENTIFY MISSING REQUIREMENTS
+
+After the review process:
+
+Identify anything required to build a complete fintech-standard platform that is not currently present.
+
+If any required item is missing:
+
+DO NOT GUESS.
+
+DO NOT ASSUME.
+
+DO NOT HALLUCINATE.
+
+Request clarification from the project owner.
+
+Wait for instructions before proceeding.
+
+PHASE 3 — CODE PRESERVATION RULES
+
+Very Important:
+
+Do not replace existing code simply because you believe your version is better.
+
+Do not rewrite business logic without justification.
+
+Do not remove existing functionality unless:
+
+It is broken.
+
+It creates conflicts.
+
+It is duplicated.
+
+It introduces security risks.
+
+Existing working functionality must remain intact.
+
+Improvements should be additive whenever possible.
+
+When modifying code:
+
+Improve it.
+
+Upgrade it.
+
+Extend it.
+
+Optimize it.
+
+Do not unnecessarily replace it.
+
+PHASE 4 — DUPLICATE CLEANUP
+
+If duplicate files exist:
+
+Remove duplicates safely.
+
+If duplicate functions exist:
+
+Merge intelligently.
+
+If duplicate components exist:
+
+Consolidate professionally.
+
+If duplicate logic exists:
+
+Keep the most stable implementation.
+
+Document every removal.
+
+Never delete functionality without justification.
+
+PHASE 5 — APEXTRADE MERGE PROCESS
+Review the ApexTrade source code thoroughly.
+
+Identify features that can improve xpressprofx.com.
+
+Examples include:
+
+Landing page improvements
+
+Hero sections
+
+Trading dashboards
+
+Market displays
+
+Statistics sections
+
+Investor sections
+
+Account systems
+
+Authentication flows
+
+Pricing sections
+
+Contact systems
+
+UI components
+
+UX enhancements
+
+Animations
+
+Mobile responsiveness
+
+Security enhancements
+
+Performance optimizations
+
+Merge only beneficial features.
+
+Avoid duplicate implementation.
+
+Avoid conflicting implementation.
+
+The final result must be:
+
+One platform
+
+One architecture
+
+One codebase
+
+One xpressprofx.com website
+
+PHASE 6 — GENERATE MISSING COMPONENTS
+
+If components do not exist after review, generate them professionally.
+
+This includes:
+
+Branding Assets
+
+Generate:
+
+Primary logo
+
+Secondary logo
+
+Favicon
+
+Brand icon set
+
+Brand guidelines
+
+Typography system
+
+Color system
+
+Design system
+
+UI System
+
+Generate:
+
+Modern fintech UI
+
+Responsive layouts
+
+Mobile-first optimization
+
+Accessibility compliance
+
+Reusable components
+
+API Layer
+
+If APIs do not exist:
+
+Design and build:
+
+Authentication APIs
+
+User APIs
+
+Dashboard APIs
+
+Wallet APIs
+
+Transaction APIs
+
+Investment APIs
+
+Support APIs
+
+Notification APIs
+
+Admin APIs
+
+Document all endpoints.
+
+PHASE 7 — DATABASE SYSTEM
+
+If no database exists:
+
+Design and build a complete production-ready database architecture.
+
+Include:
+
+User Management
+
+Users
+
+Roles
+
+Permissions
+
+Authentication
+
+Credentials
+
+Sessions
+
+MFA
+
+Financial Operations
+
+Wallets
+
+Deposits
+
+Withdrawals
+
+Transfers
+
+Investment Systems
+
+Plans
+
+Investments
+
+Profits
+
+Returns
+
+Trading Systems
+
+Trades
+
+Positions
+
+Assets
+
+Compliance
+
+KYC
+
+AML
+
+Verification
+
+Support
+
+Tickets
+
+Messages
+
+Administration
+
+Audit logs
+
+Activity logs
+
+Create:
+
+ERD diagrams
+
+Schema documentation
+
+Migration files
+
+PHASE 8 — FINTECH PLATFORM FEATURES
+
+Build or improve:
+
+Public Website
+
+Homepage
+
+About
+
+Services
+
+Markets
+
+Investment Plans
+
+Contact
+
+FAQ
+
+Legal Pages
+
+
+Client Portal
+
+Registration
+
+Login
+
+Dashboard
+
+Wallet
+
+Deposits
+
+Withdrawals
+
+Investments
+
+Trading
+
+Notifications
+
+Security Settings
+
+
+Admin Portal
+
+User Management
+
+Financial Controls
+
+KYC Review
+
+CMS
+
+Support Center
+
+Audit Logs
+
+Reporting
+
+PHASE 9 — SECURITY REQUIREMENTS
+
+Implement:
+
+MFA
+
+Role-Based Access Control
+
+Session Management
+
+Secure Authentication
+
+Password Security
+
+CSRF Protection
+
+XSS Protection
+
+SQL Injection Protection
+
+Rate Limiting
+
+Encryption
+
+Audit Logging
+
+PHASE 10 — PERFORMANCE REQUIREMENTS
+
+Optimize:
+
+Load speed
+
+SEO
+
+Accessibility
+
+Responsiveness
+
+Caching
+
+Database performance
+
+API performance
+
+PHASE 11 — TESTING
+
+Before completion:
+
+Perform:
+
+Unit Testing
+
+Integration Testing
+
+End-to-End Testing
+
+Security Testing
+
+Performance Testing
+
+Mobile Testing
+
+Browser Testing
+
+Fix every issue discovered.
+
+Continue testing until stable.
+
+PHASE 12 — DOCUMENTATION
+
+Generate complete documentation for:
+
+Frontend
+
+Backend
+
+APIs
+
+Database
+
+Deployment
+
+Security
+
+Maintenance
+
+IMPORTANT NON-NEGOTIABLE RULES
+
+Do not hallucinate.
+
+Do not invent business logic.
+
+Do not invent company information.
+
+Do not invent legal information.
+
+Do not invent compliance information.
+
+Do not invent regulatory information.
+
+Do not invent financial information.
+
+Do not invent investment performance information.
+
+Do not invent addresses.
+
+Do not invent licenses.
+
+Do not invent registrations.
+
+Do not invent approvals.
+
+Do not invent certifications.
+
+The following items MUST remain empty, marked as "OWNER TO PROVIDE," or configured as placeholders for manual entry by the project owner:
+
+Broker licenses
+
+Regulatory registrations
+
+Regulatory approvals
+
+Company registration numbers
+
+Legal entity information
+
+Physical office addresses
+
+Financial performance figures
+
+Investment return percentages
+
+Regulatory disclosures
+
+Compliance certifications
+
+Government approvals
+
+Licensing information
+
+Banking relationships
+
+Custodian relationships
+
+
+Do not populate these fields with generated data.
+
+
+---
+
+EXECUTION METHOD
+
+Proceed systematically.
+
+Review first.
+
+Audit second.
+
+Identify missing items third.
+
+Request clarification if needed.
+
+Then, build one component at a time.
+
+Continue until the entire xpressprofx.com platform is completed as a professional fintech-standard trading and investment website.
+
+Provide full source code for every new component generated.
+
+Provide implementation notes.
+
+Provide documentation.
+
+Provide testing results.
+
+Resolve issues one by one until the platform is fully operational.
+
+End of Master Command.

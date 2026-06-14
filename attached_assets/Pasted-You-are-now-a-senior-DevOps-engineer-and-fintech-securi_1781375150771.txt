@@ -1,0 +1,156 @@
+You are now a senior DevOps engineer and fintech security architect.
+
+Your task is to take the completed system and move it to FULL PRODUCTION.
+
+This is NOT development mode anymore.
+
+========================================
+
+PHASE 1: FINAL SYSTEM VERIFICATION
+
+* Ensure:
+    * All APIs are working
+    * No crashes
+    * Wallet logic is correct
+    * Transactions are consistent
+    * Auth system is secure
+
+Fix ANY remaining issue before proceeding.
+
+========================================
+
+PHASE 2: ENVIRONMENT CONFIGURATION
+
+* Create production environment variables:
+
+DATABASE_URL=
+JWT_SECRET=
+STRIPE_SECRET_KEY=
+STRIPE_WEBHOOK_SECRET=
+CLOUDINARY_URL=
+
+* Ensure NO secrets are hardcoded
+* Validate all env variables at startup
+
+========================================
+
+PHASE 3: BACKEND DEPLOYMENT
+
+* Prepare backend for deployment:
+    * Production build
+    * Error handling middleware
+    * Logging system
+* Deploy backend to:
+    → Render OR Railway
+* Ensure:
+    * Server runs without crash
+    * Public API URL is accessible
+
+========================================
+
+PHASE 4: FRONTEND DEPLOYMENT
+
+* Build frontend for production
+* Deploy to:
+    → Vercel
+* Connect frontend to live backend API
+
+========================================
+
+PHASE 5: DOMAIN SETUP
+
+* Connect domain:
+    → xpressprofx.com
+* Configure:
+    * DNS records
+    * SSL (HTTPS enabled)
+    * Secure cookies
+
+========================================
+
+PHASE 6: LIVE PAYMENT INTEGRATION
+
+* Switch to LIVE mode:
+
+Stripe / Crypto:
+
+* Replace test keys with live keys
+* Verify webhook endpoints
+* Ensure:
+    * Payments confirm correctly
+    * Wallet updates on success
+
+========================================
+
+PHASE 7: SECURITY HARDENING (CRITICAL)
+
+Implement:
+
+* Helmet (secure headers)
+* Rate limiting (prevent abuse)
+* Input validation (Zod)
+* CORS restrictions
+* JWT expiration & refresh logic
+* Prevent duplicate transactions
+* Secure admin routes
+
+========================================
+
+PHASE 8: FINAL LIVE TEST
+
+Simulate REAL usage:
+
+1. Register user
+2. Login
+3. Deposit (live/test payment)
+4. Admin approval (if needed)
+5. Wallet update
+6. Withdraw request
+7. KYC submission
+
+Fix ANY issue found.
+
+========================================
+
+PHASE 9: MONITORING & LOGGING
+
+* Add logging system
+* Track:
+    * Errors
+    * Transactions
+    * Admin actions
+
+========================================
+
+FINAL REQUIREMENTS:
+
+* System must be:
+    ✅ Stable
+    ✅ Secure
+    ✅ Connected to real DB
+    ✅ Running live
+
+========================================
+
+FINAL OUTPUT:
+
+1. Live URLs:
+    * Frontend URL
+    * Backend API URL
+2. Deployment summary
+3. Any risks or warnings
+4. Confirmation:
+    * “Production Ready” OR explain issues
+
+========================================
+
+IMPORTANT RULES:
+
+* DO NOT use mock data
+* DO NOT skip security
+* DO NOT leave any endpoint untested
+* ENSURE money logic is safe
+
+========================================
+
+Execute everything fully and completely.

@@ -1,0 +1,109 @@
+Please do a full end-to-end audit, test run, and fix of the entire project. Cover every package and every feature. Do all of the following:
+
+PART 1 - TypeScript Check:
+Run TypeScript compiler check across all packages:
+  - artifacts/api-server
+  - artifacts/nextrade
+  - artifacts/admin-portal
+  - artifacts/mockup-sandbox
+  - lib/db
+  - lib/api-zod
+  - lib/api-client-react
+Show the full output for each package. Fix every single TypeScript error found before moving on. Do not skip or ignore any error.
+
+PART 2 - Dependency Check:
+Verify all required packages are installed in every workspace. Check that these are present:
+  - ethers in artifacts/api-server
+  - qrcode and @types/qrcode in artifacts/nextrade
+  - drizzle-orm in lib/db
+  - zod in lib/api-zod
+If any are missing run npm install to add them.
+
+PART 3 - Database Check:
+Run drizzle-kit push from lib/db to make sure all schema changes are applied to the database. Confirm all tables exist:
+  - users
+  - connected_wallets
+  - bank_accounts
+  - transactions
+  - p2p_merchant_applications
+  - p2p_notifications
+  - messages
+Show confirmation that the schema is in sync.
+
+PART 4 - API Server Check:
+Start the API server and verify every single route is registered and responding correctly. Test the following route groups:
+  - GET /api/auth/session
+  - GET /api/wallets
+  - GET /api/wallets/connected/:walletId/balance
+  - POST /api/wallets/connected/:walletId/send
+  - GET /api/p2p/listings
+  - POST /api/p2p/merchant/apply
+  - GET /api/p2p/merchant/status
+  - GET /api/p2p/notifications
+  - GET /api/p2p/admin-chat
+  - POST /api/moonpay/initiate
+  - POST /api/moonpay/webhook
+  - GET /admin/p2p/merchants
+  - PATCH /admin/p2p/merchants/:userId/decision
+  - POST /admin/p2p/merchants/:userId/notify
+  - POST /admin/p2p/merchants/:userId/chat
+Confirm each route exists and returns the correct status code. Fix any route that is missing or broken.
+
+PART 5 - Frontend Check (NeXTrade):
+Start the NeXTrade frontend and verify these pages load without errors:
+  - /dashboard
+  - /wallets
+  - /p2p
+  - /settings
+  - /trade
+Check browser console for errors on each page. Fix any import errors, missing component errors, or runtime crashes.
+
+PART 6 - Frontend Check (Admin Portal):
+Start the admin portal and verify these pages load without errors:
+  - Dashboard
+  - Users
+  - Bank Accounts
+  - P2P Merchants
+  - Wallets
+Check browser console for errors. Fix any import errors or missing component errors.
+
+PART 7 - Feature Verification:
+Confirm the following features are fully working end to end:
+  1. Connected wallet shows live balance with Refresh button
+  2. Receive modal shows QR code and copy address button
+  3. Send dialog posts to the send route and returns a transaction hash
+  4. PaymentSourceSelector appears in trade entry, deposit, and P2P screens
+  5. Fiat Balance card appears on Wallets page for verified bank accounts
+  6. Buy Crypto button appears when a verified bank account is linked
+  7. MoonPay initiate endpoint constructs and returns a valid checkout URL
+  8. MoonPay webhook verifies signature using raw body and HMAC
+  9. P2P merchant application form submits and saves correctly
+  10. Non-merchant users see Become a Merchant card instead of Create Listing
+  11. Approved merchants see Merchant badge and can create listings
+  12. P2P notifications display correctly for merchants with unread badge
+  13. P2P admin chat works on both vendor frontend and admin portal
+  14. Admin can approve, reject, and revoke merchants from P2P Merchants page
+  15. Admin can send deposit notifications to merchants
+
+PART 8 - Environment Variables Check:
+Confirm these environment variables are referenced correctly in the codebase and the app does not crash if they are empty:
+  - ALCHEMY_API_KEY
+  - INFURA_API_KEY
+  - MOONPAY_API_KEY
+  - MOONPAY_WEBHOOK_SECRET
+  - DATABASE_URL
+
+PART 9 - Final Fix Pass:
+After completing all checks above, do one final pass and fix any remaining issues found. Then restart all servers and confirm:
+  - artifacts/api-server is running on port 8080 with no errors
+  - artifacts/nextrade frontend is running on Vite with no errors
+  - artifacts/admin-portal is running with no errors
+  - No TypeScript errors across any package
+  - No browser console errors on any page
+
+PART 10 - Summary Report:
+Show a complete summary listing:
+  - Every file that was fixed or modified
+  - Every error that was found and resolved
+  - Current status of all servers
+  - Any remaining issues that require manual attention such as API keys that need to be filled in

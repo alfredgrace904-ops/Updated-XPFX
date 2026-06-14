@@ -1,0 +1,251 @@
+XpressPro FX (ExpressPro101) – Complete System Requirements & Functional Overview
+
+Build and update a full-stack broker trading platform by rebranding fxpro101.com to expresspro101.com (XpressPro FX). The platform must follow standard regulated broker trading and investment company practices, primarily based on UK standards, while being adaptable for USA, Europe, Asia, Africa, and global use. The system must be secure, scalable, modular, and production-ready.
+
+Development must follow a structured, step-by-step approach. All features must be fully functional with no placeholders. Errors must be fixed before proceeding, and the entire system must be tested and validated before final deployment.
+
+1. Core System Architecture
+
+* Frontend: React (modern, responsive UI)
+* Backend: Node.js (Express)
+* Database: PostgreSQL or MongoDB
+* Clean, modular, and scalable architecture
+* Secure API design and role-based access control (user/admin)
+
+2. User Account System
+
+* User registration:
+    * First name, middle name (optional), last name (mandatory)
+    * Username, email, phone number, country
+* Login and authentication (JWT or secure session-based)
+* Email and phone OTP verification (with expiry and resend)
+* User profile management
+* Forgot and change password functionality
+* Account access restricted until KYC is completed
+* Demo account system (auto-generated per IP/session with separate balances)
+
+3. Security System
+
+* Wallet seed phrase or wallet key code (unique per user, non-recoverable)
+* Login PIN setup
+* Session management with auto logout
+* Encrypted data storage
+* Protection against unauthorized access
+* Full system validation before deployment
+
+4. KYC & Compliance System
+
+* Mandatory identity verification
+* Restrict withdrawals and key features until KYC is approved
+* Store and manage verification status per user
+
+5. Wallet System
+
+Multiple wallet types:
+
+* Trading wallet
+* Social trading wallet
+* Main account wallet
+* Fiat wallet
+* Connected wallet
+* P2P wallet
+
+Features:
+
+* Main wallet aggregates total balance
+* Clear withdrawable balance display
+* Internal transfers between wallets
+
+6. Web3 Wallet Integration
+
+* Connect external crypto wallets (MetaMask-style / WalletConnect)
+* Support up to 5 connected wallets per user
+* Allow connection via:
+    * Wallet seed phrase
+    * Private key code
+* If full real integration is possible, implement it securely and accurately like MetaMask
+* If not, simulate realistic wallet connection
+
+After connection:
+
+* View wallet balances
+* Send crypto
+* Receive crypto
+* Interact with wallet directly from platform
+* Add up to 5 external withdrawal wallet addresses
+
+7. Financial System (Deposits, Withdrawals, Transfers)
+
+* Full support for:
+    * Deposits
+    * Withdrawals
+    * Transfers
+
+Withdrawal sources:
+
+* Main wallet
+* Fiat wallet
+* Connected wallet
+
+Withdrawal destinations:
+
+* Connected wallets
+* External wallets
+* Linked bank accounts
+
+Rules:
+
+* All withdrawals enter pending state
+* Require admin approval
+* Balance deducted only after approval
+
+Gas fee system:
+
+* Dynamic per transaction
+* Applied based on operation
+
+8. Bank Linking & Fiat System
+
+* Users must link a bank account
+* At least one debit/credit card required
+* Enable:
+    * Fiat deposits
+    * Fiat withdrawals
+    * Crypto ↔ fiat conversion
+
+9. Crypto System
+
+* Buy crypto via third-party provider (MoonPay-style redirect)
+* Crypto sent directly to connected wallet
+* Selling crypto = “Coming Soon”
+
+10. Trading System
+
+* Live trading dashboard with charts
+* Ongoing trade display
+* Profit and loss tracking
+* Trading wallet updates
+* Admin-controlled or simulated trading logic
+
+11. Live Portfolio & Analytics
+
+* Real-time portfolio tracking
+* Profit/loss updates
+* Historical trade records
+* Charts and analytics
+
+12. P2P Trading System
+
+* Vendor/merchant registration (admin approval required)
+* Vendor listings
+* Incoming transactions
+* Completed transactions
+
+Flow:
+
+* User matched with vendor
+* Notifications sent (email + in-app)
+* Instructions and wallet details provided
+* Proof of payment upload
+* Transaction moves to completed
+
+Features:
+
+* Chat system per transaction
+* Admin control over all P2P activities
+* P2P wallet for transactions
+
+13. Referral & Reward System
+
+* Unique referral link per user
+* Automatic tracking
+* Reward: $500 per successful referral
+
+Duration:
+
+* New users: 3 months
+* Existing users: 1 month
+* Referral bonus/jackpot display in dashboard
+
+14. Debit/Credit Card System
+
+* Users can request a card (eligibility required)
+* After approval:
+    * User customizes design
+    * Or system auto-generates design
+* Card usable online and physically
+
+15. Admin Control Panel
+
+* Secure admin login
+* Full backend control:
+    * Manage users
+    * Approve/reject withdrawals
+    * Modify balances
+    * Control trading data
+    * Manage KYC
+    * Override system operations
+* All financial operations require admin approval
+* Admin trading dashboard with monitoring tools
+
+16. Notification & Email System
+
+* In-app notifications (read/unread)
+* Automated email notifications for:
+    * Signup verification
+    * Password reset
+    * Withdrawals
+    * Deposits
+    * Security alerts
+
+17. AI Assistant System
+
+* Integrated AI bot across platform
+* Guides users and answers questions
+* Cannot perform financial transactions
+* Sends alerts and updates
+
+18. Support & Communication
+
+* Integrated support:
+    * Email
+    * Live chat
+    * WhatsApp, Telegram, Instagram, etc.
+* AI handles general queries
+* Human support handles financial issues
+
+19. Platform Behavior Rules
+
+* Monthly requirements:
+    * Maintenance fee
+    * Bot subscription
+    * At least one trade
+* Must be completed within 14 days
+* Failure results in restricted or locked account
+
+20. Default System Settings
+
+* Default currency: USDC
+* Multi-wallet aggregation
+* Role-based access system
+
+21. System Testing & Validation
+
+* Full system testing after development
+* Re-run and verify all features
+* Fix all bugs and errors
+* Ensure stability and performance
+* No placeholders or incomplete logic
+
+🏁 FINAL GOAL
+
+Deliver a platform that is:
+
+* Fully functional
+* Secure
+* Scalable
+* Professional
+* Easy to use
+* Industry-standard compliant
+
+All features must be implemented correctly, efficiently, and integrated without breaking existing functionality.

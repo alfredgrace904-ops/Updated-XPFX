@@ -1,0 +1,32 @@
+modules = ["nodejs-20", "web", "bash"]
+[agent]
+expertMode = true
+
+[nix]
+channel = "stable-25_05"
+
+[[ports]]
+localPort = 8080
+externalPort = 80
+
+[[ports]]
+localPort = 8081
+externalPort = 8081
+
+[[ports]]
+localPort = 25580
+externalPort = 3002
+
+[[ports]]
+localPort = 25849
+externalPort = 3000
+
+[deployment]
+deploymentTarget = "cloudrun"
+
+[userenv]
+
+[userenv.shared]
+LOG_LEVEL = "info"
+ALLOWED_ORIGINS = "https://xpressprofx.com,https://www.xpressprofx.com"
+APP_NAME = "XpressPro FX"

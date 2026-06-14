@@ -1,0 +1,54 @@
+Please do all of the following steps in order to fix the MoonPay integration issues and complete feature #12. Do not replace any existing working code unless explicitly told to below.
+
+STEP 1 - Fix the MoonPay webhook signature verification:
+Open the MoonPay webhook route (POST /moonpay/webhook) and fix the HMAC verification to use the raw request body instead of the parsed body. Do this by:
+1. Adding raw body middleware specifically for the /moonpay/webhook route before any JSON body parser runs on that route
+2. Computing the HMAC-SHA256 signature over the exact raw payload bytes combined with the timestamp exactly as MoonPay specifies in their webhook docs
+3. Comparing the computed signature against the x-moonpay-signature header value using a timing-safe comparison
+4. Rejecting the request with 401 if the signature does not match
+5. Only proceeding to process the event if the signature is valid
+Use MOONPAY_WEBHOOK_SECRET as the env var for the secret key. Do not break any other routes.
+
+STEP 2 - Fix fiatBalance and fiatCurrency fields:
+Open lib/db/src/schema/wallets.ts and add these two fields to the bank_accounts table if they are not already there:
+  fiatBalance: numeric("fiat_balance").default("0"),
+  fiatCurrency: text("fiat_currency").default("USD"),
+Then run: cd lib/db && npx drizzle-kit push
+Also update the bank account API responses in the routes to include fiatBalance and fiatCurrency in all GET responses for bank accounts.
+
+STEP 3 - Add admin route to set fiat balance:
+In the admin routes file, add or verify this route exists:
+PATCH /admin/users/:userId/bank-accounts/:bankId
+It should accept fiatBalance (numeric string) and fiatCurrency (string) in the request body and update the bank account record. Protect it with admin auth middleware. Add Zod validation for the request body.
+
+STEP 4 - Add moonpayEmail field to user profile:
+Add moonpayEmail: text("moonpay_email") to the users table in the DB schema if not already present. Run drizzle-kit push after. Expose moonpayEmail in the PATCH /auth/profile endpoint so users can save it. Add a MoonPay Account section in the user settings page with an email input field and Save button that calls PATCH /auth/profile.
+
+STEP 5 - Display fiat balance cards on Wallets page and dashboard:
+On the Wallets page and dashboard, for each verified bank account render a Fiat Balance card showing:
+- The fiatCurrency and fiatBalance values
+- If the bank account is unverified or fiatBalance is not set, show a placeholder message: "Complete bank verification to see your fiat balance"
+Do not remove any existing wallet cards or break existing layout.
+
+STEP 6 - Build the Buy Crypto flow:
+On the Wallets page add a "Buy Crypto" button that is only visible when the user has at least one verified bank account. Clicking it opens a multi-step dialog:
+- Step 1: Asset selector showing platform assets
+- Step 2: Fiat amount input with estimated crypto amount shown below it
+- Step 3: Destination selector with three options: platform wallet, connected external wallet (if connected), or custom address input
+On the final step, call POST /moonpay/initiate which constructs and returns a signed MoonPay hosted checkout URL using MOONPAY_API_KEY env var, pre-populated with user name, email, moonpayEmail if set, destination wallet address, selected asset, and fiat amount. The frontend opens the returned URL in a new tab.
+
+STEP 7 - Add MoonPay widget fallback message:
+Inside the Buy Crypto dialog, below the MoonPay launch button, add this note:
+"You may need to complete your MoonPay profile on first use. Link your MoonPay account in Settings to streamline future purchases."
+Add a shortcut link next to it that opens the MoonPay Account section in the user settings page.
+
+STEP 8 - Fix webhook to credit platform wallet on successful purchase:
+In the POST /moonpay/webhook handler, after signature verification passes, check if the event type is a successful purchase completion and if the destination address matches the user's platform wallet address. If it does, credit the user's platform wallet with the purchased crypto amount and log a deposit transaction in the user's activity feed.
+
+STEP 9 - Add environment variables:
+Add these to project secrets with empty string placeholders if not already set:
+- MOONPAY_API_KEY
+- MOONPAY_WEBHOOK_SECRET
+
+STEP 10 - Verify everything:
+Run TypeScript check across all packages and confirm zero errors. Restart the dev server and confirm all workflows are running with no crashes. Show a summary of every file changed.

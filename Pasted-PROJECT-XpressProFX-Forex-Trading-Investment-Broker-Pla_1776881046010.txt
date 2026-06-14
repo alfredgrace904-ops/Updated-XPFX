@@ -1,0 +1,152 @@
+PROJECT: XpressProFX (Forex Trading & Investment Broker Platform)
+
+This is a full-stack forex trading and investment brokerage web platform. The system must be stable, secure, and fully functional with proper authentication, wallet integration, trading system structure, admin panel, and user dashboard.
+
+---
+
+1. WEBSITE OVERVIEW
+- Build a complete forex trading and investment broker platform called XpressProFX
+- The platform must support user registration, login, trading dashboard, wallet connection, deposits, withdrawals, and admin control panel
+- Ensure all systems are fully tested and working without errors
+- Fix any existing issues with login, demo account, admin panel, and authentication systems
+
+---
+
+2. WALLET SYSTEM (WEB3 INTEGRATION)
+
+2.1 Wallet Connection Features:
+- Integrate secure wallet connection using MetaMask and WalletConnect
+- Users must be able to connect external crypto wallets
+- Users can connect up to 5 different wallet addresses per account.
+
+2.2 Wallet Functions:
+- Display wallet balance directly in the dashboard
+- Allow users to send, receive, and transfer crypto using signed transactions
+- All transactions must be signed externally through wallet provider (MetaMask / WalletConnect)
+
+2.3 Withdrawal Wallets:
+- Users can select connected wallets as primary withdrawal destinations
+- Users can also manually add up to 5 external wallet addresses for withdrawals
+
+---
+
+3. TRADING SYSTEM
+
+- Build a trading dashboard that displays live market charts
+- Users can simulate or perform trading actions depending on system configuration
+- Trades must be processed securely and logged in database
+- Include profit/loss tracking system per user account
+- All trading data must be consistent and not manually alterable by admin
+
+---
+
+4. WITHDRAWAL & TRANSACTION SYSTEM
+
+- All withdrawals must go through a PENDING state before processing
+- Admin must approve or reject withdrawal requests
+- Withdrawal methods:
+  - Crypto wallet transfer (connected wallets or manual addresses)
+  - Bank withdrawal (after bank account linking)
+
+---
+
+5. BANK LINKING SYSTEM
+
+- Users can link bank accounts by adding debit card details
+- Bank accounts must be verified before withdrawals are allowed
+- Enable crypto-to-fiat and fiat-to-crypto conversion logic (simulation or integration-ready)
+
+---
+
+6. USER ACCOUNT SYSTEM
+
+- User registration and login system must be fully functional
+- Include email verification during signup
+- Include password reset via email
+- Add secure session authentication (JWT or Replit Auth)
+
+---
+
+7. DEMO ACCOUNT SYSTEM
+
+- Provide demo trading accounts for users
+- Demo accounts must reset or generate unique sessions per new user/IP
+- Demo balances must not affect real accounts
+
+---
+
+8. ADMIN PANEL (SECURE CONTROL SYSTEM)
+
+8.1 Admin Authentication:
+- Build secure admin login system using proper authentication (NOT backdoor credentials)
+- Role-based access control must be implemented
+
+8.2 Admin Dashboard Features:
+- View all users and their activity
+- Monitor deposits, withdrawals, and trading history
+- Approve or reject withdrawal requests
+- View system logs and activity reports
+- View live trading chart dashboard.
+
+9. AI ASSISTANT SYSTEM
+
+- Add AI assistant across the platform
+- AI must guide users on trading and platform usage
+- AI must NOT execute financial transactions or override system security rules
+
+---
+
+10. REFERRAL SYSTEM
+
+- Implement referral system with unique referral links per user
+- Users earn referral rewards when new users register and trade
+- Referral bonuses:
+  - New users: program lasts 3 months
+  - Existing users: program lasts 1 month
+- Referral rewards must be automatically calculated and tracked
+
+---
+
+11. KYC & COMPLIANCE SYSTEM
+
+- Require users to complete KYC verification before full access
+- KYC includes:
+  - Identity verification
+  - Basic user information
+- Restrict trading and withdrawals until KYC is approved
+
+---
+
+12. EMAIL NOTIFICATION SYSTEM
+
+- Send automated emails for:
+  - Account registration
+  - Password reset
+  - Deposit confirmation
+  - Withdrawal status updates
+  - Security alerts
+- Ensure email system is fully tested and working
+
+---
+
+13. SYSTEM SECURITY & TESTING
+
+- Fix all authentication issues (admin, user, demo accounts)
+- Fix routing and dashboard loading errors
+- Run full system test after implementation
+- Ensure no broken features remain
+- Perform final verification pass before deployment
+
+---
+
+14. FINAL REQUIREMENT
+
+After all features are implemented:
+- Rerun entire system
+- Test all user flows step-by-step
+- Confirm wallet connection works properly
+- Confirm login, signup, and admin panel work correctly
+- Confirm email system works
+- Confirm withdrawal system is stable and in pending state workflow
+
+END OF INSTRUCTIONS

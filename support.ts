@@ -1,0 +1,62 @@
+/**
+ * /support routes — list and create support tickets.
+ */
+import { Router, type IRouter } from "express";
+import {
+  CreateSupportTicketBody,
+  type Message,
+  type SupportTicket,
+} from "@workspace/api-zod";
+import { getUserData, newId, NOW } from "../lib/store";
+import { requireAuth, requireFullAuth } from "../lib/session";
+
+const router: IRouter = Router();
+
+router.get("/support/tickets", requireAuth, (req, res) => {
+  res.json(getUserData(req.userId!).supportTickets);
+});
+
+router.post("/support/tickets", requireFullAuth, (req, res) => {
+  const parsed = CreateSupportTicketBody.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: "Invalid ticket", details: parsed.error.issues });
+  }
+  const u = req.storedUser!.user;
+  const data = getUserData(req.userId!);
+  const ticketId = newId("st");
+  const initialMessage: Message = {
+    id: newId("stm"),
+    senderId: u.id,
+    senderName: u.fullName,
+    senderAvatar: u.avatarUrl ?? null,
+    content: parsed.data.message,
+    context: "support",
+    contextId: ticketId,
+    isFromUser: true,
+    createdAt: NOW(),
+  };
+  const autoReply: Message = {
+    id: newId("stm"),
+    senderId: "support_agent",
+    senderName: "XpressPro FX Support",
+    senderAvatar: null,
+    content: "Thanks for reaching out — a support specialist will reply within a few hours.",
+    context: "support",
+    contextId: ticketId,
+    isFromUser: false,
+    createdAt: new Date(Date.now() + 2000).toISOString(),
+  };
+  const ticket: SupportTicket = {
+    id: ticketId,
+    subject: parsed.data.subject,
+    status: "open",
+    priority: parsed.data.priority,
+    messages: [initialMessage, autoReply],
+    createdAt: NOW(),
+    updatedAt: NOW(),
+  };
+  data.supportTickets.unshift(ticket);
+  return res.json(ticket);
+});
+
+export default router;

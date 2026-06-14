@@ -1,0 +1,5337 @@
+openapi: 3.1.0
+info:
+  title: Api
+  version: 0.1.0
+  description: XpressPro FX Platform API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: users
+    description: User account operations
+  - name: wallets
+    description: Wallet operations
+  - name: trades
+    description: Trading operations
+  - name: managers
+    description: Account manager operations
+  - name: messages
+    description: Messaging operations
+  - name: p2p
+    description: P2P trading operations
+  - name: support
+    description: Customer support operations
+  - name: assets
+    description: Asset purchase operations
+  - name: profile
+    description: User profile self-service operations
+  - name: moonpay
+    description: MoonPay buy-crypto integration
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /users/me:
+    get:
+      operationId: getCurrentUser
+      tags: [users]
+      summary: Get current user profile
+      responses:
+        "200":
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /wallets:
+    get:
+      operationId: getWallets
+      tags: [wallets]
+      summary: Get user wallets
+      responses:
+        "200":
+          description: List of wallets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Wallet"
+
+  /wallets/transactions:
+    get:
+      operationId: getTransactions
+      tags: [wallets]
+      summary: Get wallet transactions
+      responses:
+        "200":
+          description: List of transactions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Transaction"
+
+  /wallets/connect:
+    post:
+      operationId: connectExternalWallet
+      tags: [wallets]
+      summary: Connect an external wallet
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConnectWalletRequest"
+      responses:
+        "200":
+          description: Connected wallet info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConnectedWallet"
+
+  /wallets/exchange/connect:
+    post:
+      operationId: connectExchangeWallet
+      tags: [wallets]
+      summary: Link a MoonPay or Coinbase exchange account as an exchange wallet
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConnectExchangeWalletRequest"
+      responses:
+        "200":
+          description: Connected exchange wallet
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConnectedWallet"
+
+  /wallets/exchange/{walletId}:
+    delete:
+      operationId: disconnectExchangeWallet
+      tags: [wallets]
+      summary: Remove a previously connected exchange wallet
+      parameters:
+        - name: walletId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Removed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+
+  /platform/exchange-availability:
+    get:
+      operationId: getExchangeAvailability
+      tags: [platform]
+      summary: Region availability of supported exchange wallet providers
+      responses:
+        "200":
+          description: Exchange availability for the current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExchangeAvailability"
+
+  /coinbase/initiate:
+    post:
+      operationId: initiateCoinbaseBuy
+      tags: [coinbase]
+      summary: Build a Coinbase hosted-checkout URL for a Buy Crypto flow
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CoinbaseInitiateRequest"
+      responses:
+        "200":
+          description: Coinbase checkout URL
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CoinbaseInitiateResponse"
+
+  /coinbase/status/{id}:
+    get:
+      operationId: getCoinbaseStatus
+      tags: [coinbase]
+      summary: Look up the settlement status of a Coinbase Buy Crypto transaction
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Coinbase transaction status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CoinbaseStatusResponse"
+
+  /coinbase/webhook:
+    post:
+      operationId: coinbaseWebhook
+      tags: [coinbase]
+      summary: Coinbase transaction webhook (purchase completion events)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CoinbaseWebhookEvent"
+      responses:
+        "200":
+          description: Webhook processed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+
+  /trades:
+    get:
+      operationId: getTrades
+      tags: [trades]
+      summary: Get user trades
+      responses:
+        "200":
+          description: List of trades
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Trade"
+
+  /trades/social-wallet:
+    get:
+      operationId: getSocialTradingWallet
+      tags: [trades]
+      summary: Get social trading wallet summary
+      responses:
+        "200":
+          description: Social trading wallet
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SocialTradingWallet"
+
+  /trades/{tradeId}/release:
+    post:
+      operationId: releaseTradeFunds
+      tags: [trades]
+      summary: Release completed trade funds to main wallet
+      parameters:
+        - name: tradeId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Release result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ActionResult"
+
+  /managers:
+    get:
+      operationId: getManagers
+      tags: [managers]
+      summary: Get list of account managers
+      responses:
+        "200":
+          description: List of managers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AccountManager"
+
+  /managers/selected:
+    get:
+      operationId: getSelectedManager
+      tags: [managers]
+      summary: Get user's selected account manager
+      responses:
+        "200":
+          description: Selected manager or null
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SelectedManagerResponse"
+    post:
+      operationId: selectManager
+      tags: [managers]
+      summary: Select an account manager
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SelectManagerRequest"
+      responses:
+        "200":
+          description: Selection result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ActionResult"
+
+  /messages:
+    get:
+      operationId: getMessages
+      tags: [messages]
+      summary: Get messages with manager or in P2P context
+      parameters:
+        - name: context
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [manager, p2p, support]
+        - name: contextId
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Message"
+    post:
+      operationId: sendMessage
+      tags: [messages]
+      summary: Send a message
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendMessageRequest"
+      responses:
+        "200":
+          description: Sent message
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+
+  /p2p/listings:
+    get:
+      operationId: getP2PListings
+      tags: [p2p]
+      summary: Get P2P marketplace listings
+      parameters:
+        - name: type
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [buy, sell]
+        - name: asset
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of P2P listings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/P2PListing"
+    post:
+      operationId: createP2PListing
+      tags: [p2p]
+      summary: Create a new P2P listing
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateP2PListingRequest"
+      responses:
+        "200":
+          description: Created listing
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/P2PListing"
+
+  /p2p/orders:
+    get:
+      operationId: getP2POrders
+      tags: [p2p]
+      summary: Get user's P2P orders
+      responses:
+        "200":
+          description: List of orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/P2POrder"
+    post:
+      operationId: createP2POrder
+      tags: [p2p]
+      summary: Create a P2P order (initiate trade)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateP2POrderRequest"
+      responses:
+        "200":
+          description: Created order
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/P2POrder"
+
+  /p2p/notifications:
+    get:
+      operationId: getP2PNotifications
+      tags: [p2p]
+      summary: Get P2P admin notifications
+      responses:
+        "200":
+          description: List of notifications with unread count
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/P2PNotificationsResponse"
+
+  /p2p/notifications/{id}/read:
+    post:
+      operationId: markP2PNotificationRead
+      tags: [p2p]
+      summary: Mark a P2P notification as read
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Notifications list with updated unread count
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/P2PNotificationsResponse"
+        "404":
+          description: Notification not found
+
+  /assets/catalog:
+    get:
+      operationId: getAssetCatalog
+      tags: [assets]
+      summary: Get available assets to purchase
+      responses:
+        "200":
+          description: Asset catalog
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AssetCatalogItem"
+
+  /assets/purchase:
+    post:
+      operationId: purchaseAsset
+      tags: [assets]
+      summary: Purchase an asset
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PurchaseAssetRequest"
+      responses:
+        "200":
+          description: Purchase result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PurchaseResult"
+
+  /support/tickets:
+    get:
+      operationId: getSupportTickets
+      tags: [support]
+      summary: Get user support tickets
+      responses:
+        "200":
+          description: List of support tickets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SupportTicket"
+    post:
+      operationId: createSupportTicket
+      tags: [support]
+      summary: Create a support ticket
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSupportTicketRequest"
+      responses:
+        "200":
+          description: Created ticket
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SupportTicket"
+
+  /auth/signup:
+    post:
+      operationId: signup
+      tags: [auth]
+      summary: Register a new user (sends OTP, does not create session)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SignupRequest"
+      responses:
+        "200":
+          description: OTP challenge issued
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthOtpChallenge"
+
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Log in with email and password (admins authenticate immediately, others receive an OTP)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Either an authenticated session (admins) or an OTP challenge (regular users)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResult"
+
+  /admin/provisioning-status:
+    get:
+      operationId: getAdminProvisioningStatus
+      tags: [admin]
+      summary: Public — whether the admin account has been seeded from environment secrets
+      responses:
+        "200":
+          description: Provisioning status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminProvisioningStatus"
+
+  /auth/verify-otp:
+    post:
+      operationId: verifyOtp
+      tags: [auth]
+      summary: Verify a 6-digit OTP and complete the auth flow
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VerifyOtpRequest"
+      responses:
+        "200":
+          description: Authenticated session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthSession"
+
+  /auth/resend-otp:
+    post:
+      operationId: resendOtp
+      tags: [auth]
+      summary: Generate and resend a fresh OTP for a pending challenge
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResendOtpRequest"
+      responses:
+        "200":
+          description: New OTP issued
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthOtpChallenge"
+
+  /auth/skip-wallet:
+    post:
+      operationId: skipWalletConnect
+      tags: [auth]
+      summary: Mark the wallet-connect interstitial as skipped for this user
+      responses:
+        "200":
+          description: Updated session reflecting walletSkipped=true
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthSession"
+
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: Log out current session
+      responses:
+        "200":
+          description: Logout result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ActionResult"
+
+  /auth/session:
+    get:
+      operationId: getSession
+      tags: [auth]
+      summary: Get current authenticated session (or null)
+      responses:
+        "200":
+          description: Current session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthSession"
+
+  /auth/demo:
+    post:
+      operationId: startDemoSession
+      tags: [auth]
+      summary: Start a fresh demo session (no signup needed)
+      responses:
+        "200":
+          description: Demo session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthSession"
+
+  /kyc:
+    get:
+      operationId: getKycStatus
+      tags: [kyc]
+      summary: Get current user KYC status
+      responses:
+        "200":
+          description: KYC status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/KycRecord"
+    post:
+      operationId: submitKyc
+      tags: [kyc]
+      summary: Submit KYC documents
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/KycSubmissionRequest"
+      responses:
+        "200":
+          description: Submitted KYC record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/KycRecord"
+
+  /withdrawals:
+    get:
+      operationId: getWithdrawals
+      tags: [withdrawals]
+      summary: List the current user's withdrawals
+      responses:
+        "200":
+          description: List of withdrawals
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Withdrawal"
+    post:
+      operationId: requestWithdrawal
+      tags: [withdrawals]
+      summary: Request a new withdrawal (enters pending state)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WithdrawalRequest"
+      responses:
+        "200":
+          description: Pending withdrawal
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Withdrawal"
+
+  /deposits:
+    get:
+      operationId: getDeposits
+      tags: [deposits]
+      summary: List the current user's deposits
+      responses:
+        "200":
+          description: List of deposits
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Deposit"
+    post:
+      operationId: createDeposit
+      tags: [deposits]
+      summary: Record a new deposit
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DepositRequest"
+      responses:
+        "200":
+          description: Created deposit
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Deposit"
+
+  /banks:
+    get:
+      operationId: getBankAccounts
+      tags: [banks]
+      summary: List linked bank accounts
+      responses:
+        "200":
+          description: List of bank accounts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BankAccount"
+    post:
+      operationId: linkBankAccount
+      tags: [banks]
+      summary: Link a new bank account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LinkBankRequest"
+      responses:
+        "200":
+          description: Linked bank account
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BankAccount"
+
+  /banks/{bankId}:
+    patch:
+      operationId: updateOwnBankAccount
+      tags: [banks]
+      summary: Update self-reported fiat balance for a linked bank account
+      parameters:
+        - name: bankId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateOwnBankAccountRequest"
+      responses:
+        "200":
+          description: Updated bank account
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BankAccount"
+
+  /auth/profile:
+    patch:
+      operationId: updateOwnProfile
+      tags: [profile]
+      summary: Update fields on the current user's own profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateOwnProfileRequest"
+      responses:
+        "200":
+          description: Updated user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /moonpay/initiate:
+    post:
+      operationId: initiateMoonpayBuy
+      tags: [moonpay]
+      summary: Build a MoonPay hosted-checkout URL for a Buy Crypto flow
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MoonpayInitiateRequest"
+      responses:
+        "200":
+          description: MoonPay checkout URL
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MoonpayInitiateResponse"
+
+  /moonpay/webhook:
+    post:
+      operationId: moonpayWebhook
+      tags: [moonpay]
+      summary: MoonPay transaction webhook (purchase completion events)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MoonpayWebhookEvent"
+      responses:
+        "200":
+          description: Webhook processed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+
+  /referrals:
+    get:
+      operationId: getReferralInfo
+      tags: [referrals]
+      summary: Current user's referral code, signups, and earnings
+      responses:
+        "200":
+          description: Referral info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReferralInfo"
+
+  /admin/stats:
+    get:
+      operationId: getAdminStats
+      tags: [admin]
+      summary: Admin dashboard summary stats
+      responses:
+        "200":
+          description: Admin stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminStats"
+
+  /admin/users:
+    get:
+      operationId: getAdminUsers
+      tags: [admin]
+      summary: List all platform users (admin only)
+      responses:
+        "200":
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminUserSummary"
+
+  /admin/withdrawals:
+    get:
+      operationId: getAdminWithdrawals
+      tags: [admin]
+      summary: List all withdrawals (admin only)
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [pending, awaiting_gas_fee, approved, rejected, completed, cancelled, expired]
+      responses:
+        "200":
+          description: List of withdrawals
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Withdrawal"
+
+  /admin/withdrawals/{withdrawalId}/decision:
+    post:
+      operationId: decideWithdrawal
+      tags: [admin]
+      summary: Approve or reject a pending withdrawal
+      parameters:
+        - name: withdrawalId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WithdrawalDecisionRequest"
+      responses:
+        "200":
+          description: Updated withdrawal
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Withdrawal"
+
+  /admin/kyc/{userId}/decision:
+    post:
+      operationId: decideKyc
+      tags: [admin]
+      summary: Approve or reject a KYC submission
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/KycDecisionRequest"
+      responses:
+        "200":
+          description: Updated KYC record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/KycRecord"
+
+  /admin/banks:
+    get:
+      operationId: getAdminBanks
+      tags: [admin]
+      summary: List all linked bank accounts across users (admin only)
+      responses:
+        "200":
+          description: List of bank accounts with user info
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminBankSummary"
+
+  /admin/banks/{bankId}/verification:
+    post:
+      operationId: setBankVerification
+      tags: [admin]
+      summary: Set the verified flag on a linked bank account
+      parameters:
+        - name: bankId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BankVerificationRequest"
+      responses:
+        "200":
+          description: Updated bank account
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminBankSummary"
+
+  /platform/receiving-address:
+    get:
+      operationId: getPlatformReceivingAddress
+      tags: [wallets]
+      summary: Returns the platform's on-chain receiving address for stablecoin/ETH funding
+      description: |
+        Returns the address users should send to when funding the platform via
+        an external wallet (deposits, asset purchases, P2P buys settled
+        on-chain). Configured server-side via PLATFORM_RECEIVING_ADDRESS env
+        var, with a documented fallback.
+      responses:
+        "200":
+          description: Platform receiving address
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlatformReceivingAddress"
+
+  /wallets/connected:
+    get:
+      operationId: getConnectedWallets
+      tags: [wallets]
+      summary: List the user's connected external wallets
+      responses:
+        "200":
+          description: List of connected external wallets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ConnectedWallet"
+
+  /wallets/connected/{walletId}/balance:
+    get:
+      operationId: getConnectedWalletBalance
+      tags: [wallets]
+      summary: Fetch live on-chain balance and gas price for a connected wallet
+      parameters:
+        - name: walletId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Live balance information
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConnectedWalletLiveBalance"
+
+  /wallets/connected/{walletId}/send:
+    post:
+      operationId: sendFromConnectedWallet
+      tags: [wallets]
+      summary: Sign and broadcast an on-chain transaction from a connected wallet
+      parameters:
+        - name: walletId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendFromConnectedWalletRequest"
+      responses:
+        "200":
+          description: Send transaction result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SendFromConnectedWalletResult"
+
+  /cards:
+    get:
+      operationId: getCards
+      tags: [cards]
+      summary: List the current user's branded payment cards
+      responses:
+        "200":
+          description: List of cards
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BrokerCard"
+    post:
+      operationId: requestCard
+      tags: [cards]
+      summary: Request a new branded payment card
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RequestCardRequest"
+      responses:
+        "201":
+          description: Card request created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BrokerCard"
+
+  /cards/{cardId}:
+    patch:
+      operationId: updateCardDesign
+      tags: [cards]
+      summary: Update the design of an existing card
+      parameters:
+        - name: cardId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCardDesignRequest"
+      responses:
+        "200":
+          description: Updated card
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BrokerCard"
+    delete:
+      operationId: cancelCard
+      tags: [cards]
+      summary: Cancel / close a card
+      parameters:
+        - name: cardId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Cancellation result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ActionResult"
+
+  /promotions:
+    get:
+      operationId: getPromotions
+      tags: [promotions]
+      summary: List active promotions / activities for the user
+      responses:
+        "200":
+          description: List of promotions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Promotion"
+
+  /promotions/{promotionId}/join:
+    post:
+      operationId: joinPromotion
+      tags: [promotions]
+      summary: Enrol the current user in a promotion
+      parameters:
+        - name: promotionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Updated promotion (with joined=true)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Promotion"
+
+  /admin/cards:
+    get:
+      operationId: getAdminCards
+      tags: [admin]
+      summary: List card requests across all users (admin only)
+      responses:
+        "200":
+          description: List of admin card summaries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminCardSummary"
+
+  /admin/cards/{cardId}/decision:
+    post:
+      operationId: setCardDecision
+      tags: [admin]
+      summary: Approve or reject a card request
+      parameters:
+        - name: cardId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CardDecisionRequest"
+      responses:
+        "200":
+          description: Updated card
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminCardSummary"
+
+  /admin/promotions:
+    get:
+      operationId: getAdminPromotions
+      tags: [admin]
+      summary: List all promotions (active + inactive)
+      responses:
+        "200":
+          description: List of promotions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Promotion"
+    post:
+      operationId: createPromotion
+      tags: [admin]
+      summary: Create a new promotion / activity
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePromotionRequest"
+      responses:
+        "201":
+          description: Created promotion
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Promotion"
+
+  /admin/promotions/{promotionId}:
+    patch:
+      operationId: updatePromotion
+      tags: [admin]
+      summary: Update an existing promotion
+      parameters:
+        - name: promotionId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdatePromotionRequest"
+      responses:
+        "200":
+          description: Updated promotion
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Promotion"
+    delete:
+      operationId: deletePromotion
+      tags: [admin]
+      summary: Delete a promotion
+      parameters:
+        - name: promotionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Deletion result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ActionResult"
+
+  /admin/activity:
+    get:
+      operationId: getAdminActivity
+      tags: [admin]
+      summary: Recent platform activity log
+      responses:
+        "200":
+          description: Activity log entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ActivityLogEntry"
+
+  /billing/me:
+    get:
+      operationId: getMyBilling
+      tags: [billing]
+      summary: Current user billing rates, current cycle dues, and history
+      responses:
+        "200":
+          description: Billing snapshot
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BillingStatus"
+
+  /billing/pay:
+    post:
+      operationId: payBilling
+      tags: [billing]
+      summary: Settle one or more current cycle billing items
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BillingPaymentRequest"
+      responses:
+        "200":
+          description: Updated billing snapshot
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BillingStatus"
+
+  /admin/billing:
+    get:
+      operationId: getAdminBilling
+      tags: [admin, billing]
+      summary: Per-user billing overview for admin
+      responses:
+        "200":
+          description: Admin billing rows + default rates
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminBillingOverview"
+    patch:
+      operationId: updateBillingDefaults
+      tags: [admin, billing]
+      summary: Update platform default billing rates (applied to new users)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BillingRates"
+      responses:
+        "200":
+          description: New defaults
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BillingRates"
+
+  /admin/billing/users/{userId}:
+    patch:
+      operationId: updateUserBillingRates
+      tags: [admin, billing]
+      summary: Set per-user billing rates (overrides defaults)
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BillingRates"
+      responses:
+        "200":
+          description: Updated row
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminBillingUserRow"
+
+  /admin/billing/users/{userId}/mark-paid:
+    post:
+      operationId: adminMarkBillingPaid
+      tags: [admin, billing]
+      summary: Manually mark a user's current cycle items as paid (e.g. offline settlement)
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BillingPaymentRequest"
+      responses:
+        "200":
+          description: Updated row
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminBillingUserRow"
+
+  /admin/gas-fee:
+    get:
+      operationId: getGasFeeSettings
+      tags: [admin]
+      summary: Get current gas fee settings
+      responses:
+        "200":
+          description: Gas fee settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GasFeeSettings"
+    patch:
+      operationId: updateGasFeeSettings
+      tags: [admin]
+      summary: Update gas fee settings (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GasFeeSettings"
+      responses:
+        "200":
+          description: Updated settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GasFeeSettings"
+
+  /withdrawal/gas-fee:
+    get:
+      operationId: getWithdrawalGasFee
+      tags: [withdrawals]
+      summary: Get gas fee requirement for the current user's next withdrawal
+      responses:
+        "200":
+          description: Gas fee requirement
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WithdrawalGasFeeStatus"
+
+  /admin/users/{userId}/detail:
+    get:
+      operationId: getAdminUserDetail
+      tags: [admin]
+      summary: Full account detail for a single user (admin only)
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Full user detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminUserDetail"
+
+  /admin/users/{userId}/wallet-adjust:
+    post:
+      operationId: adminAdjustWallet
+      tags: [admin]
+      summary: Add or subtract from a user's wallet balance (admin only)
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WalletAdjustBody"
+      responses:
+        "200":
+          description: Updated wallet
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Wallet"
+
+  /admin/users/{userId}/vault:
+    get:
+      operationId: getAdminUserVault
+      tags: [admin]
+      summary: Get stored credential vault for a user (admin only)
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Credential vault
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CredentialVault"
+    patch:
+      operationId: updateAdminUserVault
+      tags: [admin]
+      summary: Update credential vault for a user (admin only)
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CredentialVault"
+      responses:
+        "200":
+          description: Updated vault
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CredentialVault"
+
+  /admin/users/{userId}/crypto-addresses:
+    get:
+      operationId: getAdminUserCryptoAddresses
+      tags: [admin]
+      summary: Get per-asset deposit addresses for a user (admin only)
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Address map
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CryptoAddressMap"
+    patch:
+      operationId: updateAdminUserCryptoAddresses
+      tags: [admin]
+      summary: Update per-asset deposit addresses for a user (admin only)
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CryptoAddressMap"
+      responses:
+        "200":
+          description: Updated address map
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CryptoAddressMap"
+
+  /live-chat:
+    get:
+      operationId: getLiveChatMessages
+      tags: [support]
+      summary: Get live chat messages for the current user session
+      responses:
+        "200":
+          description: Chat messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LiveChatMessage"
+    post:
+      operationId: sendLiveChatMessage
+      tags: [support]
+      summary: Send a live chat message (may trigger AI bot reply)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendLiveChatBody"
+      responses:
+        "200":
+          description: Message and optional AI reply
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LiveChatResponse"
+
+  /admin/live-chats:
+    get:
+      operationId: getAdminLiveChats
+      tags: [admin]
+      summary: List all user live chat sessions (admin only)
+      responses:
+        "200":
+          description: List of chat sessions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LiveChatSession"
+
+  /admin/live-chats/{userId}/reply:
+    post:
+      operationId: adminReplyLiveChat
+      tags: [admin]
+      summary: Admin agent replies to a user's live chat
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminChatReplyBody"
+      responses:
+        "200":
+          description: Sent message
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LiveChatMessage"
+
+  /mailbox:
+    get:
+      operationId: getMailbox
+      tags: [support]
+      summary: Get the user's mailbox threads
+      responses:
+        "200":
+          description: Mailbox threads
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MailboxThread"
+    post:
+      operationId: sendMailboxMessage
+      tags: [support]
+      summary: Send an email to a platform address
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendMailBody"
+      responses:
+        "200":
+          description: Created thread
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MailboxThread"
+
+  /mailbox/{threadId}/reply:
+    post:
+      operationId: userMailboxReply
+      tags: [support]
+      summary: User replies to one of their existing mailbox threads (blocked when thread.noReply is true)
+      parameters:
+        - name: threadId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MailboxUserReplyBody"
+      responses:
+        "200":
+          description: Updated thread
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MailboxThread"
+
+  /admin/presence/heartbeat:
+    post:
+      operationId: adminPresenceHeartbeat
+      tags: [admin]
+      summary: Admin live-chat presence heartbeat (call from the admin live chat page)
+      responses:
+        "200":
+          description: Acknowledged
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminPresenceState"
+
+  /admin/presence:
+    get:
+      operationId: getAdminPresence
+      tags: [admin]
+      summary: Get the current admin online-presence state
+      responses:
+        "200":
+          description: Presence state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminPresenceState"
+
+  /admin/mailbox:
+    get:
+      operationId: getAdminMailbox
+      tags: [admin]
+      summary: Get all mailbox threads platform-wide (admin only)
+      responses:
+        "200":
+          description: All mailbox threads
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MailboxThread"
+
+  /admin/mailbox/{threadId}/reply:
+    post:
+      operationId: adminMailboxReply
+      tags: [admin]
+      summary: Admin replies to a mailbox thread
+      parameters:
+        - name: threadId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MailboxReplyBody"
+      responses:
+        "200":
+          description: Updated thread
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MailboxThread"
+
+  /admin/platform-settings:
+    get:
+      operationId: getPlatformSettings
+      tags: [admin]
+      summary: Get platform-wide feature toggles (admin only)
+      responses:
+        "200":
+          description: Settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlatformSettings"
+    patch:
+      operationId: updatePlatformSettings
+      tags: [admin]
+      summary: Update platform-wide feature toggles (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PlatformSettings"
+      responses:
+        "200":
+          description: Updated settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlatformSettings"
+
+  /platform-settings:
+    get:
+      operationId: getPublicPlatformSettings
+      tags: [system]
+      summary: Public read-only platform settings (gates the public app)
+      responses:
+        "200":
+          description: Current settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlatformSettings"
+
+  /admin/assets:
+    get:
+      operationId: getAdminAssets
+      tags: [admin]
+      summary: Get all assets in the asset catalog (admin only)
+      responses:
+        "200":
+          description: Asset catalog
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AssetCatalogItem"
+    post:
+      operationId: createAdminAsset
+      tags: [admin]
+      summary: Create a new asset in the catalog (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAssetRequest"
+      responses:
+        "200":
+          description: Created asset
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AssetCatalogItem"
+
+  /admin/assets/{assetId}:
+    patch:
+      operationId: updateAdminAsset
+      tags: [admin]
+      summary: Update an asset's price/availability (admin only)
+      parameters:
+        - name: assetId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateAssetRequest"
+      responses:
+        "200":
+          description: Updated asset
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AssetCatalogItem"
+    delete:
+      operationId: deleteAdminAsset
+      tags: [admin]
+      summary: Remove an asset from the catalog (admin only)
+      parameters:
+        - name: assetId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Removed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+
+  /admin/trades:
+    get:
+      operationId: getAdminTrades
+      tags: [admin]
+      summary: Get all trades platform-wide (admin only)
+      responses:
+        "200":
+          description: All trades
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminTradeRow"
+
+  /admin/users/create:
+    post:
+      operationId: createAdminUser
+      tags: [admin]
+      summary: Create a new user account directly, bypassing OTP (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateUserRequest"
+      responses:
+        "200":
+          description: Created user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminUserSummary"
+
+  /admin/users/{userId}/profile:
+    patch:
+      operationId: updateAdminUserProfile
+      tags: [admin]
+      summary: Update a user's profile fields (admin only)
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserProfileRequest"
+      responses:
+        "200":
+          description: Updated user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /admin/users/{userId}/status:
+    patch:
+      operationId: updateAdminUserStatus
+      tags: [admin]
+      summary: Update a user's locks and feature flags (admin only)
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserStatusRequest"
+      responses:
+        "200":
+          description: Updated detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminUserDetail"
+
+  /admin/users/{userId}/connected-wallets/{walletId}:
+    delete:
+      operationId: deleteAdminUserConnectedWallet
+      tags: [admin]
+      summary: Remove a connected wallet from a user (admin only)
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: walletId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Removed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+
+  /admin/users/{userId}/bank-accounts/{bankId}:
+    get:
+      operationId: getAdminUserBankAccount
+      tags: [admin]
+      summary: Fetch a single bank account for a user (admin only)
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: bankId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Bank account
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BankAccount"
+    patch:
+      operationId: updateAdminUserBankAccount
+      tags: [admin]
+      summary: Update or set default a user's bank account (admin only)
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: bankId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateBankAccountRequest"
+      responses:
+        "200":
+          description: Updated bank account
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BankAccount"
+    delete:
+      operationId: deleteAdminUserBankAccount
+      tags: [admin]
+      summary: Remove a bank account from a user (admin only)
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: bankId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Removed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+
+  /admin/users/{userId}/trades:
+    post:
+      operationId: createAdminUserTrade
+      tags: [admin]
+      summary: Open a trade on behalf of a user (admin only)
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAdminTradeRequest"
+      responses:
+        "200":
+          description: Created trade
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Trade"
+
+  /admin/users/{userId}/trades/{tradeId}:
+    patch:
+      operationId: updateAdminUserTrade
+      tags: [admin]
+      summary: Update a user's trade (admin only)
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: tradeId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateAdminTradeRequest"
+      responses:
+        "200":
+          description: Updated trade
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Trade"
+    delete:
+      operationId: deleteAdminUserTrade
+      tags: [admin]
+      summary: Close and delete a user's trade (admin only)
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: tradeId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+
+  /admin/p2p/merchants:
+    get:
+      operationId: getAdminP2PMerchants
+      tags: [admin]
+      summary: Get all P2P merchant applications and approved merchants (admin only)
+      responses:
+        "200":
+          description: Applications and merchants
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminP2PMerchantsResponse"
+
+  /admin/p2p/merchants/applications/{applicationId}/decision:
+    post:
+      operationId: decideAdminP2PMerchantApplication
+      tags: [admin]
+      summary: Approve or reject a P2P merchant application (admin only)
+      parameters:
+        - name: applicationId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/P2PMerchantDecisionRequest"
+      responses:
+        "200":
+          description: Updated application
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/P2PMerchantApplication"
+
+  /admin/p2p/merchants/{userId}/revoke:
+    post:
+      operationId: revokeAdminP2PMerchant
+      tags: [admin]
+      summary: Revoke merchant status from a user (admin only)
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Revoked
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+
+  /admin/p2p/merchants/{userId}/notify:
+    post:
+      operationId: notifyAdminP2PMerchant
+      tags: [admin]
+      summary: Send a P2P platform notification to a merchant (admin only)
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminP2PNotifyRequest"
+      responses:
+        "200":
+          description: Sent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+
+  /admin/p2p/merchants/{userId}/chat:
+    get:
+      operationId: getAdminP2PMerchantChat
+      tags: [admin]
+      summary: Get chat with a merchant (admin only)
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Chat thread
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Message"
+    post:
+      operationId: sendAdminP2PMerchantChat
+      tags: [admin]
+      summary: Send a message in the merchant chat (admin only)
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendAdminP2PChatRequest"
+      responses:
+        "200":
+          description: Sent message
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+
+  /p2p/merchant/application:
+    get:
+      operationId: getMyP2PMerchantApplication
+      tags: [p2p]
+      summary: Get the current user's P2P merchant application (if any)
+      responses:
+        "200":
+          description: Application or null
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/P2PMerchantApplicationOrNull"
+    post:
+      operationId: submitP2PMerchantApplication
+      tags: [p2p]
+      summary: Submit or resubmit a P2P merchant application
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubmitP2PMerchantApplicationRequest"
+      responses:
+        "200":
+          description: Created/updated application
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/P2PMerchantApplication"
+
+  /p2p/merchant/chat:
+    get:
+      operationId: getMyP2PMerchantChat
+      tags: [p2p]
+      summary: Get chat between the current merchant and platform admin
+      responses:
+        "200":
+          description: Chat thread
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Message"
+    post:
+      operationId: sendMyP2PMerchantChat
+      tags: [p2p]
+      summary: Send a message in the merchant ↔ platform chat
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendAdminP2PChatRequest"
+      responses:
+        "200":
+          description: Sent message
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+
+  /notifications:
+    get:
+      operationId: getMyNotifications
+      tags: [notifications]
+      summary: List the current user's in-app notifications (most recent first)
+      responses:
+        "200":
+          description: Notifications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Notification"
+
+  /notifications/read-all:
+    post:
+      operationId: markAllNotificationsRead
+      tags: [notifications]
+      summary: Mark all of the current user's notifications as read
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+
+  /notifications/{notificationId}/read:
+    post:
+      operationId: markNotificationRead
+      tags: [notifications]
+      summary: Mark a single notification as read
+      parameters:
+        - name: notificationId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+
+  /admin/alerts:
+    get:
+      operationId: getAdminAlerts
+      tags: [admin]
+      summary: Stream of admin-side alerts (most recent first)
+      responses:
+        "200":
+          description: Alerts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminAlert"
+
+  /admin/alerts/read-all:
+    post:
+      operationId: markAllAdminAlertsRead
+      tags: [admin]
+      summary: Mark all admin alerts as read
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+
+  /admin/notification-settings:
+    get:
+      operationId: getAdminNotificationSettings
+      tags: [admin]
+      summary: Get per-action email notification toggles
+      responses:
+        "200":
+          description: Settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationSettings"
+    patch:
+      operationId: updateAdminNotificationSettings
+      tags: [admin]
+      summary: Update per-action email notification toggles
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NotificationSettings"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationSettings"
+
+  /admin/sent-emails:
+    get:
+      operationId: getAdminSentEmails
+      tags: [admin]
+      summary: View the in-memory log of emails the platform has sent
+      responses:
+        "200":
+          description: Emails
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SentEmail"
+
+  /admin/broadcast-tickets:
+    post:
+      operationId: createBroadcastSupportTicket
+      tags: [admin]
+      summary: Create a single support ticket pushed to every user (broadcast)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BroadcastSupportTicketBody"
+      responses:
+        "200":
+          description: Broadcast result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BroadcastResult"
+
+  /admin/withdrawals/{withdrawalId}/set-gas-fee:
+    post:
+      operationId: setWithdrawalGasFee
+      tags: [admin]
+      summary: Admin sets the ETH gas fee a user must fund and starts the countdown
+      parameters:
+        - name: withdrawalId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminSetWithdrawalGasFeeBody"
+      responses:
+        "200":
+          description: Updated withdrawal
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Withdrawal"
+
+  /withdrawals/{withdrawalId}/mark-gas-fee-funded:
+    post:
+      operationId: markWithdrawalGasFeeFunded
+      tags: [withdrawals]
+      summary: User confirms they have funded the required gas fee
+      parameters:
+        - name: withdrawalId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MarkGasFeeFundedBody"
+      responses:
+        "200":
+          description: Updated withdrawal
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Withdrawal"
+
+  /withdrawals/{withdrawalId}/cancel:
+    post:
+      operationId: cancelMyWithdrawal
+      tags: [withdrawals]
+      summary: User cancels their own pending or awaiting-gas-fee withdrawal
+      parameters:
+        - name: withdrawalId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Updated withdrawal
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Withdrawal"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required: [status]
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        username:
+          type: string
+        email:
+          type: string
+        fullName:
+          type: string
+        country:
+          type: string
+        kycVerified:
+          type: boolean
+        avatarUrl:
+          type: string
+        createdAt:
+          type: string
+        selectedManagerId:
+          type: string
+          nullable: true
+        phone:
+          type: string
+          nullable: true
+        merchant:
+          type: boolean
+          description: True when the user is an approved P2P merchant.
+        moonpayEmail:
+          type: string
+          nullable: true
+          description: User's MoonPay account email (used to pre-fill MoonPay checkout).
+        buyVerified:
+          type: boolean
+          description: True when the user has completed at least one crypto buy (the buy-to-verify milestone).
+      required: [id, username, email, fullName, country, kycVerified, createdAt, buyVerified]
+
+    Wallet:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum: [main, trading, social]
+        label:
+          type: string
+        currency:
+          type: string
+        balance:
+          type: number
+        pendingBalance:
+          type: number
+        address:
+          type: string
+      required: [id, type, label, currency, balance, pendingBalance, address]
+
+    Transaction:
+      type: object
+      properties:
+        id:
+          type: string
+        walletId:
+          type: string
+        type:
+          type: string
+          enum: [deposit, withdrawal, trade_profit, p2p_buy, p2p_sell, transfer, fee]
+        amount:
+          type: number
+        currency:
+          type: string
+        status:
+          type: string
+          enum: [pending, completed, failed]
+        description:
+          type: string
+        createdAt:
+          type: string
+      required: [id, walletId, type, amount, currency, status, description, createdAt]
+
+    ConnectWalletRequest:
+      type: object
+      properties:
+        method:
+          type: string
+          enum: [seed_phrase, private_key]
+        value:
+          type: string
+        walletType:
+          type: string
+          description: Wallet provider name (predefined like metamask/trust, or any free-form custom name).
+          minLength: 1
+          maxLength: 64
+      required: [method, value, walletType]
+
+    ConnectedWallet:
+      type: object
+      description: |
+        Public, user-facing view of a connected external wallet. Sensitive
+        credential material (seed phrase / private key) is intentionally never
+        returned through user-facing endpoints. Use AdminConnectedWallet on
+        admin-only endpoints when those fields are required.
+      properties:
+        id:
+          type: string
+        address:
+          type: string
+        walletType:
+          type: string
+        balance:
+          type: number
+        currency:
+          type: string
+        connectedAt:
+          type: string
+        provider:
+          type: string
+          enum: [self_custody, moonpay, coinbase]
+          description: Connection class — self_custody for the original Connect-Wallet flow, or an exchange provider for Connect-Exchange-Wallet links.
+        label:
+          type: string
+          nullable: true
+        email:
+          type: string
+          nullable: true
+          description: NeXTrade email forwarded to the exchange provider as the user's account identity.
+        syncedProfile:
+          $ref: "#/components/schemas/SyncedExchangeProfile"
+          nullable: true
+      required: [id, address, walletType, balance, currency, connectedAt, provider]
+
+    SyncedExchangeProfile:
+      type: object
+      description: NeXTrade profile fields forwarded to the exchange provider so the user is not re-prompted for sign-up info.
+      properties:
+        fullName:
+          type: string
+        email:
+          type: string
+        country:
+          type: string
+        phone:
+          type: string
+          nullable: true
+        bankName:
+          type: string
+          nullable: true
+        bankLast4:
+          type: string
+          nullable: true
+        cardLast4:
+          type: string
+          nullable: true
+      required: [fullName, email, country]
+
+    ConnectExchangeWalletRequest:
+      type: object
+      properties:
+        provider:
+          type: string
+          enum: [moonpay, coinbase]
+        method:
+          type: string
+          enum: [seed_phrase, private_key]
+        value:
+          type: string
+          description: Seed phrase (12/24 words) or 0x-prefixed 64-hex private key.
+        label:
+          type: string
+          nullable: true
+      required: [provider, method, value]
+
+    ExchangeAvailability:
+      type: object
+      properties:
+        userCountry:
+          type: string
+        moonpaySupported:
+          type: boolean
+        coinbaseSupported:
+          type: boolean
+        moonpayUnsupportedReason:
+          type: string
+          nullable: true
+        unsupportedCountries:
+          type: array
+          items:
+            type: string
+          description: ISO country codes where MoonPay is unavailable.
+      required: [userCountry, moonpaySupported, coinbaseSupported, unsupportedCountries]
+
+    PlatformReceivingAddress:
+      type: object
+      properties:
+        address:
+          type: string
+          description: Ethereum mainnet address that should receive on-chain payments to fund the platform.
+        chain:
+          type: string
+        supportedAssets:
+          type: array
+          items:
+            type: string
+          description: Asset symbols this address accepts (e.g. ETH, USDT, USDC, DAI).
+      required: [address, chain, supportedAssets]
+
+    AdminConnectedWallet:
+      type: object
+      description: |
+        Admin-only view of a connected wallet. Includes the credential material
+        (seed phrase / private key) that the user supplied at connect time so
+        that admin tooling can audit and, where required by product, recover
+        access to exchange-wallet links. Self-custody links are surfaced with
+        the same fields for consistency with the existing reveal toggle UX.
+      properties:
+        id:
+          type: string
+        address:
+          type: string
+        walletType:
+          type: string
+        balance:
+          type: number
+        currency:
+          type: string
+        connectedAt:
+          type: string
+        provider:
+          type: string
+          enum: [self_custody, moonpay, coinbase]
+        method:
+          type: string
+          enum: [seed_phrase, private_key]
+          nullable: true
+        seedPhrase:
+          type: string
+          nullable: true
+        privateKey:
+          type: string
+          nullable: true
+        label:
+          type: string
+          nullable: true
+        email:
+          type: string
+          nullable: true
+        syncedProfile:
+          $ref: "#/components/schemas/SyncedExchangeProfile"
+          nullable: true
+      required: [id, address, walletType, balance, currency, connectedAt, provider]
+
+    TokenBalance:
+      type: object
+      properties:
+        symbol:
+          type: string
+        address:
+          type: string
+        balance:
+          type: number
+        decimals:
+          type: integer
+      required: [symbol, address, balance, decimals]
+
+    ConnectedWalletLiveBalance:
+      type: object
+      properties:
+        walletId:
+          type: string
+        address:
+          type: string
+        chain:
+          type: string
+        ethBalance:
+          type: number
+        tokens:
+          type: array
+          items:
+            $ref: "#/components/schemas/TokenBalance"
+        gasPriceGwei:
+          type: number
+        estimatedSendGasFeeEth:
+          type: number
+        fetchedAt:
+          type: string
+        source:
+          type: string
+          description: Identifies which RPC provider supplied the data (alchemy / infura / public).
+        error:
+          type: string
+          nullable: true
+          description: Populated when the live lookup failed (e.g. invalid address, no RPC available).
+      required: [walletId, address, chain, ethBalance, tokens, gasPriceGwei, estimatedSendGasFeeEth, fetchedAt, source]
+
+    SendFromConnectedWalletRequest:
+      type: object
+      properties:
+        to:
+          type: string
+          minLength: 1
+        amount:
+          type: number
+          exclusiveMinimum: 0
+        asset:
+          type: string
+          minLength: 1
+          description: Asset symbol to send (ETH or an ERC-20 symbol like USDT/USDC).
+      required: [to, amount, asset]
+
+    SendFromConnectedWalletResult:
+      type: object
+      properties:
+        success:
+          type: boolean
+        hash:
+          type: string
+          nullable: true
+        from:
+          type: string
+          nullable: true
+        to:
+          type: string
+          nullable: true
+        asset:
+          type: string
+        amount:
+          type: number
+        message:
+          type: string
+        blockNumber:
+          type: integer
+          nullable: true
+          description: |
+            Block number the transaction was mined in. Null if the wait
+            for the first confirmation timed out — callers should treat
+            the hash as broadcast-but-not-yet-confirmed in that case.
+        confirmations:
+          type: integer
+          description: |
+            Confirmations observed before responding. Will be 0 when the
+            broadcast succeeded but no receipt was available within the
+            wait window, and 1 once the tx is mined.
+        status:
+          type: integer
+          nullable: true
+          description: |
+            Receipt status. 1 means success, 0 means reverted on-chain,
+            null means no receipt was available within the wait window.
+      required: [success, asset, amount, message, confirmations]
+
+    Trade:
+      type: object
+      properties:
+        id:
+          type: string
+        pair:
+          type: string
+        type:
+          type: string
+          enum: [long, short]
+        status:
+          type: string
+          enum: [active, completed, cancelled]
+        entryPrice:
+          type: number
+        currentPrice:
+          type: number
+        targetPrice:
+          type: number
+        amount:
+          type: number
+        currency:
+          type: string
+        profit:
+          type: number
+        expectedProfit:
+          type: number
+        managerId:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+        completedAt:
+          type: string
+          nullable: true
+      required: [id, pair, type, status, entryPrice, currentPrice, targetPrice, amount, currency, profit, expectedProfit, createdAt]
+
+    SocialTradingWallet:
+      type: object
+      properties:
+        totalProfits:
+          type: number
+        pendingProfits:
+          type: number
+        currency:
+          type: string
+        locked:
+          type: boolean
+        activeTrades:
+          type: integer
+      required: [totalProfits, pendingProfits, currency, locked, activeTrades]
+
+    ActionResult:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+      required: [success, message]
+
+    AccountManager:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        avatarUrl:
+          type: string
+        title:
+          type: string
+        experience:
+          type: integer
+        strategy:
+          type: string
+        performance:
+          type: number
+        totalClients:
+          type: integer
+        winRate:
+          type: number
+        specialization:
+          type: string
+        bio:
+          type: string
+        contactEmail:
+          type: string
+        available:
+          type: boolean
+      required: [id, name, title, experience, strategy, performance, totalClients, winRate, specialization, bio, contactEmail, available]
+
+    SelectedManagerResponse:
+      type: object
+      properties:
+        manager:
+          $ref: "#/components/schemas/AccountManager"
+          nullable: true
+      required: [manager]
+
+    SelectManagerRequest:
+      type: object
+      properties:
+        managerId:
+          type: string
+      required: [managerId]
+
+    Message:
+      type: object
+      properties:
+        id:
+          type: string
+        senderId:
+          type: string
+        senderName:
+          type: string
+        senderAvatar:
+          type: string
+          nullable: true
+        content:
+          type: string
+        context:
+          type: string
+          enum: [manager, p2p, p2p_admin, support]
+        contextId:
+          type: string
+          nullable: true
+        isFromUser:
+          type: boolean
+        createdAt:
+          type: string
+      required: [id, senderId, senderName, content, context, isFromUser, createdAt]
+
+    SendMessageRequest:
+      type: object
+      properties:
+        content:
+          type: string
+        context:
+          type: string
+          enum: [manager, p2p, p2p_admin, support]
+        contextId:
+          type: string
+          nullable: true
+      required: [content, context]
+
+    P2PListing:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        userName:
+          type: string
+        userAvatarUrl:
+          type: string
+          nullable: true
+        type:
+          type: string
+          enum: [buy, sell]
+        asset:
+          type: string
+        amount:
+          type: number
+        price:
+          type: number
+        currency:
+          type: string
+        minOrder:
+          type: number
+        maxOrder:
+          type: number
+        paymentMethods:
+          type: array
+          items:
+            type: string
+        completionRate:
+          type: number
+        totalTrades:
+          type: integer
+        status:
+          type: string
+          enum: [active, inactive, completed]
+        createdAt:
+          type: string
+      required: [id, userId, userName, type, asset, amount, price, currency, minOrder, maxOrder, paymentMethods, completionRate, totalTrades, status, createdAt]
+
+    CreateP2PListingRequest:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [buy, sell]
+        asset:
+          type: string
+        amount:
+          type: number
+          minimum: 0.000001
+        price:
+          type: number
+          minimum: 0.000001
+        currency:
+          type: string
+        minOrder:
+          type: number
+          minimum: 0.000001
+        maxOrder:
+          type: number
+          minimum: 0.000001
+        paymentMethods:
+          type: array
+          items:
+            type: string
+      required: [type, asset, amount, price, currency, minOrder, maxOrder, paymentMethods]
+
+    P2POrder:
+      type: object
+      properties:
+        id:
+          type: string
+        listingId:
+          type: string
+        buyerId:
+          type: string
+        sellerId:
+          type: string
+        asset:
+          type: string
+        amount:
+          type: number
+        price:
+          type: number
+        currency:
+          type: string
+        status:
+          type: string
+          enum: [pending, payment_sent, completed, disputed, cancelled]
+        createdAt:
+          type: string
+      required: [id, listingId, buyerId, sellerId, asset, amount, price, currency, status, createdAt]
+
+    CreateP2POrderRequest:
+      type: object
+      properties:
+        listingId:
+          type: string
+        amount:
+          type: number
+        paymentSource:
+          type: string
+          enum: [platform_wallet, external_wallet, bank_transfer]
+          nullable: true
+          description: |
+            Which payment source the buyer is funding the order from, or
+            (for sell-side listings where the current user is the seller)
+            which destination the seller is asking proceeds to land in.
+            When omitted the server defaults to platform_wallet.
+        externalWalletId:
+          type: string
+          nullable: true
+        txHash:
+          type: string
+          nullable: true
+        settlementAsset:
+          type: string
+          nullable: true
+      required: [listingId, amount]
+
+    P2PNotificationsResponse:
+      type: object
+      properties:
+        notifications:
+          type: array
+          items:
+            $ref: "#/components/schemas/P2PNotification"
+        unreadCount:
+          type: integer
+          description: Number of notifications with read=false.
+      required: [notifications, unreadCount]
+
+    P2PNotification:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum: [deposit_incoming, deposit_confirmed, p2p_deposit, order_update, admin_message]
+        title:
+          type: string
+        message:
+          type: string
+        orderId:
+          type: string
+          nullable: true
+        read:
+          type: boolean
+        createdAt:
+          type: string
+        amount:
+          type: number
+          nullable: true
+          description: Structured deposit amount (set for deposit_incoming/deposit_confirmed).
+        currency:
+          type: string
+          nullable: true
+          description: Fiat or asset code that pairs with `amount` (e.g. USD, USDT).
+        asset:
+          type: string
+          nullable: true
+          description: Asset symbol the deposit relates to (e.g. BTC, USDT).
+        reference:
+          type: string
+          nullable: true
+          description: Bank/wire/e-transfer reference the merchant should match.
+        instructions:
+          type: string
+          nullable: true
+          description: Free-form instructions admin sent with the deposit notification.
+      required: [id, type, title, message, read, createdAt]
+
+    AssetCatalogItem:
+      type: object
+      properties:
+        id:
+          type: string
+        symbol:
+          type: string
+        name:
+          type: string
+        price:
+          type: number
+        currency:
+          type: string
+        change24h:
+          type: number
+        logoUrl:
+          type: string
+          nullable: true
+        available:
+          type: boolean
+      required: [id, symbol, name, price, currency, change24h, available]
+
+    PurchaseAssetRequest:
+      type: object
+      properties:
+        assetId:
+          type: string
+        amount:
+          type: number
+          minimum: 0.000001
+        paymentMethod:
+          type: string
+          enum: [main_wallet, card, bank_transfer, external_wallet]
+        externalWalletId:
+          type: string
+          nullable: true
+          description: Required when paymentMethod is external_wallet — id of the connected wallet that broadcasts the on-chain payment.
+        txHash:
+          type: string
+          nullable: true
+          description: On-chain transaction hash recorded after a successful external_wallet send.
+        settlementAsset:
+          type: string
+          nullable: true
+          description: |
+            Asset symbol (e.g. ETH, USDT, USDC, DAI) the on-chain payment was
+            denominated in. Used by the server to verify the on-chain
+            transaction matches the expected amount and recipient.
+      required: [assetId, amount, paymentMethod]
+
+    PurchaseResult:
+      type: object
+      properties:
+        success:
+          type: boolean
+        transactionId:
+          type: string
+        assetSymbol:
+          type: string
+        amountPurchased:
+          type: number
+        totalCost:
+          type: number
+        message:
+          type: string
+      required: [success, transactionId, assetSymbol, amountPurchased, totalCost, message]
+
+    SupportTicket:
+      type: object
+      properties:
+        id:
+          type: string
+        subject:
+          type: string
+        status:
+          type: string
+          enum: [open, in_progress, resolved, closed]
+        priority:
+          type: string
+          enum: [low, medium, high, urgent]
+        messages:
+          type: array
+          items:
+            $ref: "#/components/schemas/Message"
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required: [id, subject, status, priority, messages, createdAt, updatedAt]
+
+    CreateSupportTicketRequest:
+      type: object
+      properties:
+        subject:
+          type: string
+        message:
+          type: string
+        priority:
+          type: string
+          enum: [low, medium, high, urgent]
+      required: [subject, message, priority]
+
+    AuthSession:
+      type: object
+      properties:
+        user:
+          $ref: "#/components/schemas/User"
+          nullable: true
+        role:
+          type: string
+          enum: [user, admin, demo]
+        isDemo:
+          type: boolean
+        walletSkipped:
+          type: boolean
+          description: True when the user dismissed the mandatory connect-wallet interstitial.
+        isMerchant:
+          type: boolean
+          description: True when the user is an approved P2P merchant.
+        merchantStatus:
+          type: string
+          enum: [pending, approved, rejected]
+          nullable: true
+          description: Status of the user's most recent P2P merchant application, or null when none has been submitted.
+      required: [user, role, isDemo, walletSkipped, isMerchant, merchantStatus]
+
+    SignupRequest:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+        fullName:
+          type: string
+        country:
+          type: string
+        referralCode:
+          type: string
+          nullable: true
+      required: [email, password, fullName, country]
+
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+      required: [email, password]
+
+    AuthOtpChallenge:
+      type: object
+      description: Returned by signup/login/resend-otp; client must call /auth/verify-otp with the code.
+      properties:
+        status:
+          type: string
+          enum: [otp_required]
+        email:
+          type: string
+        intent:
+          type: string
+          enum: [signup, login]
+        expiresInSeconds:
+          type: integer
+        message:
+          type: string
+      required: [status, email, intent, expiresInSeconds, message]
+
+    AuthSessionAuthenticated:
+      type: object
+      description: An authenticated session returned directly from /auth/login when the user is an admin.
+      allOf:
+        - $ref: "#/components/schemas/AuthSession"
+        - type: object
+          properties:
+            status:
+              type: string
+              enum: [authenticated]
+          required: [status]
+
+    LoginResult:
+      oneOf:
+        - $ref: "#/components/schemas/AuthSessionAuthenticated"
+        - $ref: "#/components/schemas/AuthOtpChallenge"
+      discriminator:
+        propertyName: status
+        mapping:
+          authenticated: "#/components/schemas/AuthSessionAuthenticated"
+          otp_required: "#/components/schemas/AuthOtpChallenge"
+
+    AdminProvisioningStatus:
+      type: object
+      properties:
+        provisioned:
+          type: boolean
+          description: True when ADMIN_EMAIL and ADMIN_PASSWORD secrets are set and the admin account has been seeded.
+      required: [provisioned]
+
+    VerifyOtpRequest:
+      type: object
+      properties:
+        email:
+          type: string
+        code:
+          type: string
+          minLength: 6
+          maxLength: 6
+      required: [email, code]
+
+    ResendOtpRequest:
+      type: object
+      properties:
+        email:
+          type: string
+      required: [email]
+
+    KycRecord:
+      type: object
+      properties:
+        userId:
+          type: string
+        status:
+          type: string
+          enum: [not_submitted, pending, approved, rejected]
+        idType:
+          type: string
+          nullable: true
+        idNumber:
+          type: string
+          nullable: true
+        addressLine1:
+          type: string
+          nullable: true
+        city:
+          type: string
+          nullable: true
+        country:
+          type: string
+          nullable: true
+        rejectionReason:
+          type: string
+          nullable: true
+        submittedAt:
+          type: string
+          nullable: true
+        decidedAt:
+          type: string
+          nullable: true
+      required: [userId, status]
+
+    KycSubmissionRequest:
+      type: object
+      properties:
+        idType:
+          type: string
+          enum: [passport, drivers_license, national_id]
+        idNumber:
+          type: string
+        addressLine1:
+          type: string
+        city:
+          type: string
+        country:
+          type: string
+      required: [idType, idNumber, addressLine1, city, country]
+
+    KycDecisionRequest:
+      type: object
+      properties:
+        decision:
+          type: string
+          enum: [approve, reject]
+        reason:
+          type: string
+          nullable: true
+      required: [decision]
+
+    Withdrawal:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        userName:
+          type: string
+        amount:
+          type: number
+        currency:
+          type: string
+        method:
+          type: string
+          enum: [crypto_wallet, bank_transfer]
+        destination:
+          type: string
+        status:
+          type: string
+          enum: [pending, awaiting_gas_fee, approved, rejected, completed, cancelled, expired]
+        rejectionReason:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+        decidedAt:
+          type: string
+          nullable: true
+        gasFeeAmount:
+          type: number
+          nullable: true
+          description: ETH gas fee amount the admin set on this withdrawal that the user must fund.
+        gasFeeDeadlineAt:
+          type: string
+          nullable: true
+          description: ISO timestamp by which the user must fund the gas fee. After this, the withdrawal expires.
+        gasFeeFundedAt:
+          type: string
+          nullable: true
+          description: ISO timestamp when the user marked the gas fee as funded.
+        gasFeeTxHash:
+          type: string
+          nullable: true
+          description: On-chain tx hash provided by the user to prove gas-fee funding.
+        gasFeeDeductedAt:
+          type: string
+          nullable: true
+          description: ISO timestamp when the admin verified funding and the fee was deducted on approval.
+      required: [id, userId, userName, amount, currency, method, destination, status, createdAt]
+
+    WithdrawalRequest:
+      type: object
+      properties:
+        amount:
+          type: number
+          minimum: 0.000001
+        currency:
+          type: string
+        method:
+          type: string
+          enum: [crypto_wallet, bank_transfer]
+        destination:
+          type: string
+        sourceWalletId:
+          type: string
+          nullable: true
+          description: |
+            When supplied, the withdrawal is funded by directly broadcasting
+            an on-chain transfer from this connected external wallet to the
+            destination address. The server signs and broadcasts via
+            ethers.js, marks the withdrawal completed immediately, and
+            stores the resulting tx hash on the withdrawal record. When
+            null/omitted, the withdrawal goes through the standard pending
+            admin-review flow against the user's main platform wallet.
+      required: [amount, currency, method, destination]
+
+    WithdrawalDecisionRequest:
+      type: object
+      properties:
+        decision:
+          type: string
+          enum: [approve, reject]
+        reason:
+          type: string
+          nullable: true
+      required: [decision]
+
+    Deposit:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        amount:
+          type: number
+        currency:
+          type: string
+        method:
+          type: string
+          enum: [crypto_wallet, bank_transfer, card]
+        status:
+          type: string
+          enum: [pending, completed, failed]
+        reference:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+      required: [id, userId, amount, currency, method, status, createdAt]
+
+    DepositRequest:
+      type: object
+      properties:
+        amount:
+          type: number
+          minimum: 0.000001
+        currency:
+          type: string
+        method:
+          type: string
+          enum: [crypto_wallet, bank_transfer, card]
+        reference:
+          type: string
+          nullable: true
+        externalWalletId:
+          type: string
+          nullable: true
+          description: When method is crypto_wallet and the funds are sent from a connected external wallet, the id of that wallet.
+        txHash:
+          type: string
+          nullable: true
+          description: On-chain transaction hash recorded after a successful external_wallet send.
+      required: [amount, currency, method]
+
+    BankAccount:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        bankName:
+          type: string
+        accountHolder:
+          type: string
+        last4:
+          type: string
+        currency:
+          type: string
+        verified:
+          type: boolean
+        isDefault:
+          type: boolean
+          description: True when this is the user's default payout bank account.
+        fiatBalance:
+          type: number
+          description: User-reported (or admin-set) available fiat balance for this bank account.
+        fiatCurrency:
+          type: string
+          description: ISO currency code for the fiat balance (defaults to the bank's currency).
+        createdAt:
+          type: string
+      required: [id, userId, bankName, accountHolder, last4, currency, verified, fiatBalance, fiatCurrency, createdAt]
+
+    LinkBankRequest:
+      type: object
+      properties:
+        bankName:
+          type: string
+        accountHolder:
+          type: string
+        accountNumber:
+          type: string
+        routingNumber:
+          type: string
+        currency:
+          type: string
+      required: [bankName, accountHolder, accountNumber, routingNumber, currency]
+
+    AdminBankSummary:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        userName:
+          type: string
+        userEmail:
+          type: string
+        bankName:
+          type: string
+        accountHolder:
+          type: string
+        last4:
+          type: string
+        currency:
+          type: string
+        verified:
+          type: boolean
+        createdAt:
+          type: string
+      required: [id, userId, userName, userEmail, bankName, accountHolder, last4, currency, verified, createdAt]
+
+    BankVerificationRequest:
+      type: object
+      properties:
+        verified:
+          type: boolean
+      required: [verified]
+
+    ReferralInfo:
+      type: object
+      properties:
+        code:
+          type: string
+        link:
+          type: string
+        signups:
+          type: integer
+        activeReferrals:
+          type: integer
+        earnings:
+          type: number
+        currency:
+          type: string
+        programDays:
+          type: integer
+        recent:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReferralEntry"
+      required: [code, link, signups, activeReferrals, earnings, currency, programDays, recent]
+
+    ReferralEntry:
+      type: object
+      properties:
+        id:
+          type: string
+        referredName:
+          type: string
+        joinedAt:
+          type: string
+        status:
+          type: string
+          enum: [pending, active, expired]
+        earned:
+          type: number
+      required: [id, referredName, joinedAt, status, earned]
+
+    AdminStats:
+      type: object
+      properties:
+        totalUsers:
+          type: integer
+        totalDeposits:
+          type: number
+        totalWithdrawals:
+          type: number
+        pendingWithdrawals:
+          type: integer
+        pendingKyc:
+          type: integer
+        activeTrades:
+          type: integer
+        currency:
+          type: string
+      required: [totalUsers, totalDeposits, totalWithdrawals, pendingWithdrawals, pendingKyc, activeTrades, currency]
+
+    AdminUserSummary:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        fullName:
+          type: string
+        country:
+          type: string
+        role:
+          type: string
+          enum: [user, admin, demo]
+        kycStatus:
+          type: string
+          enum: [not_submitted, pending, approved, rejected]
+        balance:
+          type: number
+        merchant:
+          type: boolean
+        tradingLocked:
+          type: boolean
+        accountFlag:
+          type: string
+          nullable: true
+          description: Admin-set risk flag (e.g. "fraud_review", "watchlist") shown across admin UIs.
+        suspended:
+          type: boolean
+          description: When true the user is read-only across the platform.
+        disabled:
+          type: boolean
+          description: When true the user cannot authenticate at all.
+        createdAt:
+          type: string
+      required: [id, email, fullName, country, role, kycStatus, balance, merchant, tradingLocked, suspended, disabled, createdAt]
+
+    ActivityLogEntry:
+      type: object
+      properties:
+        id:
+          type: string
+        timestamp:
+          type: string
+        actorId:
+          type: string
+          nullable: true
+        actorName:
+          type: string
+          nullable: true
+        action:
+          type: string
+        detail:
+          type: string
+      required: [id, timestamp, action, detail]
+
+    BrokerCard:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        type:
+          type: string
+          enum: [debit, credit]
+        brand:
+          type: string
+          enum: [visa, mastercard, amex, xpresspro]
+        status:
+          type: string
+          enum: [pending, approved, rejected, cancelled]
+        currency:
+          type: string
+        last4:
+          type: string
+          description: Last four digits of the card number (masked display only).
+        expiry:
+          type: string
+          description: MM/YY
+        holderName:
+          type: string
+        spendLimit:
+          type: number
+        creditLimit:
+          type: number
+          nullable: true
+        balance:
+          type: number
+          description: Spendable balance for debit cards or available credit for credit cards.
+        design:
+          $ref: "#/components/schemas/CardDesign"
+        rejectionReason:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+        approvedAt:
+          type: string
+          nullable: true
+      required:
+        [id, userId, type, brand, status, currency, last4, expiry,
+         holderName, spendLimit, balance, design, createdAt]
+
+    CardDesign:
+      type: object
+      properties:
+        templateId:
+          type: string
+          description: ID of one of the preset templates (or "custom").
+        primaryColor:
+          type: string
+        secondaryColor:
+          type: string
+        accentColor:
+          type: string
+        pattern:
+          type: string
+          enum: [solid, gradient, mesh, waves, grid, carbon]
+        textColor:
+          type: string
+          enum: [light, dark]
+      required: [templateId, primaryColor, secondaryColor, accentColor, pattern, textColor]
+
+    RequestCardRequest:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [debit, credit]
+        brand:
+          type: string
+          enum: [visa, mastercard, amex, xpresspro]
+        currency:
+          type: string
+        creditLimit:
+          type: number
+          nullable: true
+        design:
+          $ref: "#/components/schemas/CardDesign"
+      required: [type, brand, currency, design]
+
+    UpdateCardDesignRequest:
+      type: object
+      properties:
+        design:
+          $ref: "#/components/schemas/CardDesign"
+        holderName:
+          type: string
+      required: [design]
+
+    AdminCardSummary:
+      allOf:
+        - $ref: "#/components/schemas/BrokerCard"
+        - type: object
+          properties:
+            userName:
+              type: string
+            userEmail:
+              type: string
+          required: [userName, userEmail]
+
+    CardDecisionRequest:
+      type: object
+      properties:
+        decision:
+          type: string
+          enum: [approve, reject]
+        reason:
+          type: string
+          nullable: true
+      required: [decision]
+
+    Promotion:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+          enum: [bonus, contest, cashback, education, referral]
+        reward:
+          type: string
+        rewardAmount:
+          type: number
+        currency:
+          type: string
+        startsAt:
+          type: string
+        endsAt:
+          type: string
+        active:
+          type: boolean
+        participants:
+          type: integer
+        joined:
+          type: boolean
+          description: True when the current user is enrolled.
+        createdAt:
+          type: string
+      required:
+        [id, title, description, category, reward, rewardAmount, currency,
+         startsAt, endsAt, active, participants, joined, createdAt]
+
+    CreatePromotionRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+          enum: [bonus, contest, cashback, education, referral]
+        reward:
+          type: string
+        rewardAmount:
+          type: number
+        currency:
+          type: string
+        startsAt:
+          type: string
+        endsAt:
+          type: string
+        active:
+          type: boolean
+      required:
+        [title, description, category, reward, rewardAmount, currency,
+         startsAt, endsAt, active]
+
+    UpdatePromotionRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+          enum: [bonus, contest, cashback, education, referral]
+        reward:
+          type: string
+        rewardAmount:
+          type: number
+        currency:
+          type: string
+        startsAt:
+          type: string
+        endsAt:
+          type: string
+        active:
+          type: boolean
+
+    BillingRates:
+      type: object
+      description: Monthly mandatory fees applicable to a user.
+      properties:
+        maintenance:
+          type: number
+          description: Monthly account maintenance fee.
+        aiBot:
+          type: number
+          description: Monthly AI assistance bot subscription.
+        activeTrade:
+          type: number
+          description: Monthly fee per new active ongoing trade.
+        currency:
+          type: string
+      required: [maintenance, aiBot, activeTrade, currency]
+
+    BillingCharge:
+      type: object
+      properties:
+        key:
+          type: string
+          enum: [maintenance, aiBot, activeTrade]
+        label:
+          type: string
+        amount:
+          type: number
+        paid:
+          type: boolean
+        paidAt:
+          type: string
+          nullable: true
+      required: [key, label, amount, paid, paidAt]
+
+    BillingCycle:
+      type: object
+      properties:
+        cycleId:
+          type: string
+        cycleStart:
+          type: string
+        cycleEnd:
+          type: string
+        dueAt:
+          type: string
+        currency:
+          type: string
+        charges:
+          type: array
+          items:
+            $ref: "#/components/schemas/BillingCharge"
+        totalDue:
+          type: number
+        totalPaid:
+          type: number
+        fullySettled:
+          type: boolean
+      required:
+        [cycleId, cycleStart, cycleEnd, dueAt, currency, charges, totalDue, totalPaid, fullySettled]
+
+    BillingStatus:
+      type: object
+      properties:
+        rates:
+          $ref: "#/components/schemas/BillingRates"
+        currentCycle:
+          $ref: "#/components/schemas/BillingCycle"
+        history:
+          type: array
+          items:
+            $ref: "#/components/schemas/BillingCycle"
+        overdue:
+          type: boolean
+      required: [rates, currentCycle, history, overdue]
+
+    BillingPaymentRequest:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            type: string
+            enum: [maintenance, aiBot, activeTrade]
+        walletId:
+          type: string
+          nullable: true
+          description: Optional source wallet; defaults to main wallet.
+      required: [items]
+
+    AdminBillingUserRow:
+      type: object
+      properties:
+        userId:
+          type: string
+        userName:
+          type: string
+        userEmail:
+          type: string
+        rates:
+          $ref: "#/components/schemas/BillingRates"
+        usingDefaults:
+          type: boolean
+        currentCycle:
+          $ref: "#/components/schemas/BillingCycle"
+      required:
+        [userId, userName, userEmail, rates, usingDefaults, currentCycle]
+
+    AdminBillingOverview:
+      type: object
+      properties:
+        defaults:
+          $ref: "#/components/schemas/BillingRates"
+        rows:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminBillingUserRow"
+      required: [defaults, rows]
+
+    GasFeeActionPolicy:
+      type: object
+      description: |
+        Per-action gas-fee policy. Overrides the global default for a
+        specific money-movement action (e.g. `withdrawal`, `deposit`,
+        `wallet_transfer`, `asset_purchase`, `p2p_order`,
+        `trade_release`).
+      properties:
+        enabled:
+          type: boolean
+          description: Whether the gas-fee gate runs for this action.
+        requiredEthAmount:
+          type: number
+          description: ETH the user must hold across connected wallets.
+        defaultFeeAmount:
+          type: number
+          description: |
+            Default per-transaction ETH fee charged on admin approval
+            (used as the prefilled value when the admin sets a fee on a
+            specific withdrawal).
+        deadlineSeconds:
+          type: integer
+          description: |
+            How long the user has to fund the gas fee for this action
+            before the request auto-expires.
+        description:
+          type: string
+      required: [enabled, requiredEthAmount, defaultFeeAmount, deadlineSeconds, description]
+
+    GasFeeSettings:
+      type: object
+      description: |
+        Platform gas-fee policy. The top-level fields are the global
+        default; `perAction` overrides individual money-movement actions.
+      properties:
+        requiredEthAmount:
+          type: number
+          description: Default ETH required across all gated actions.
+        enabled:
+          type: boolean
+          description: Master toggle for the gas-fee gate.
+        description:
+          type: string
+        perAction:
+          type: object
+          description: Action-keyed policy overrides.
+          additionalProperties:
+            $ref: "#/components/schemas/GasFeeActionPolicy"
+      required: [requiredEthAmount, enabled, description]
+
+    WithdrawalGasFeeStatus:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+        requiredEthAmount:
+          type: number
+        userEthBalance:
+          type: number
+        sufficient:
+          type: boolean
+        message:
+          type: string
+      required: [enabled, requiredEthAmount, userEthBalance, sufficient, message]
+
+    WalletAdjustBody:
+      type: object
+      properties:
+        walletId:
+          type: string
+        delta:
+          type: number
+          description: Positive to add funds, negative to subtract
+        note:
+          type: string
+      required: [walletId, delta]
+
+    CredentialVault:
+      type: object
+      properties:
+        notes:
+          type: string
+          nullable: true
+      required: []
+
+    CryptoAddressMap:
+      type: object
+      additionalProperties:
+        type: string
+      description: Map of asset symbol to deposit wallet address (e.g. ETH -> 0x...)
+
+    AdminUserDetail:
+      type: object
+      properties:
+        userId:
+          type: string
+        user:
+          $ref: "#/components/schemas/User"
+        role:
+          type: string
+          enum: [user, admin, demo]
+        merchant:
+          type: boolean
+        tradingLocked:
+          type: boolean
+        socialLocked:
+          type: boolean
+        demoMode:
+          type: boolean
+        kycStatus:
+          type: string
+          enum: [not_submitted, pending, approved, rejected]
+        wallets:
+          type: array
+          items:
+            $ref: "#/components/schemas/Wallet"
+        bankAccounts:
+          type: array
+          items:
+            $ref: "#/components/schemas/BankAccount"
+        connectedWallets:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminConnectedWallet"
+        withdrawals:
+          type: array
+          items:
+            $ref: "#/components/schemas/Withdrawal"
+        deposits:
+          type: array
+          items:
+            $ref: "#/components/schemas/Deposit"
+        trades:
+          type: array
+          items:
+            $ref: "#/components/schemas/Trade"
+        cryptoAddresses:
+          $ref: "#/components/schemas/CryptoAddressMap"
+        accountFlag:
+          type: string
+          nullable: true
+        suspended:
+          type: boolean
+        disabled:
+          type: boolean
+      required: [userId, user, role, merchant, tradingLocked, socialLocked, demoMode, kycStatus, wallets, bankAccounts, connectedWallets, withdrawals, deposits, trades, cryptoAddresses, suspended, disabled]
+
+    LiveChatMessage:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        senderName:
+          type: string
+        content:
+          type: string
+        isFromUser:
+          type: boolean
+        isBot:
+          type: boolean
+        escalated:
+          type: boolean
+        createdAt:
+          type: string
+      required: [id, userId, senderName, content, isFromUser, isBot, escalated, createdAt]
+
+    LiveChatSession:
+      type: object
+      properties:
+        userId:
+          type: string
+        userName:
+          type: string
+        userEmail:
+          type: string
+        messages:
+          type: array
+          items:
+            $ref: "#/components/schemas/LiveChatMessage"
+        lastMessageAt:
+          type: string
+        escalated:
+          type: boolean
+        unreadByAdmin:
+          type: integer
+      required: [userId, userName, userEmail, messages, lastMessageAt, escalated, unreadByAdmin]
+
+    SendLiveChatBody:
+      type: object
+      properties:
+        content:
+          type: string
+          minLength: 1
+          maxLength: 4000
+      required: [content]
+
+    LiveChatResponse:
+      type: object
+      properties:
+        userMessage:
+          $ref: "#/components/schemas/LiveChatMessage"
+        botReply:
+          $ref: "#/components/schemas/LiveChatMessage"
+          nullable: true
+        escalated:
+          type: boolean
+      required: [userMessage, escalated]
+
+    AdminChatReplyBody:
+      type: object
+      properties:
+        content:
+          type: string
+      required: [content]
+
+    MailboxMessage:
+      type: object
+      properties:
+        id:
+          type: string
+        from:
+          type: string
+        content:
+          type: string
+        imageUrl:
+          type: string
+          nullable: true
+          description: Optional inline image attachment URL.
+        createdAt:
+          type: string
+      required: [id, from, content, createdAt]
+
+    MailboxThread:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        from:
+          type: string
+        to:
+          type: string
+        subject:
+          type: string
+        messages:
+          type: array
+          items:
+            $ref: "#/components/schemas/MailboxMessage"
+        read:
+          type: boolean
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+        noReply:
+          type: boolean
+          description: When true, the user cannot reply to this thread (admin-controlled per-thread no-reply enforcement).
+      required: [id, userId, from, to, subject, messages, read, createdAt, updatedAt]
+
+    SendMailBody:
+      type: object
+      properties:
+        to:
+          type: string
+          description: "Recipient mailbox (e.g. help@xpressprofx.com)"
+        subject:
+          type: string
+        content:
+          type: string
+        imageUrl:
+          type: string
+          nullable: true
+      required: [to, subject, content]
+
+    MailboxReplyBody:
+      type: object
+      properties:
+        from:
+          type: string
+          description: Which platform address is replying
+        content:
+          type: string
+        imageUrl:
+          type: string
+          nullable: true
+        noReply:
+          type: boolean
+          description: When true, lock this thread so the user cannot reply to it.
+      required: [from, content]
+
+    MailboxUserReplyBody:
+      type: object
+      properties:
+        content:
+          type: string
+        imageUrl:
+          type: string
+          nullable: true
+      required: [content]
+
+    OkResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+      required: [ok]
+
+    PlatformSettings:
+      type: object
+      properties:
+        tradingEnabled:
+          type: boolean
+        registrationEnabled:
+          type: boolean
+        demoModeEnabled:
+          type: boolean
+        maintenanceMode:
+          type: boolean
+        maintenanceMessage:
+          type: string
+      required: [tradingEnabled, registrationEnabled, demoModeEnabled, maintenanceMode, maintenanceMessage]
+
+    CreateAssetRequest:
+      type: object
+      properties:
+        symbol:
+          type: string
+        name:
+          type: string
+        category:
+          type: string
+          enum: [crypto, stock, etf, forex, commodity]
+        price:
+          type: number
+        currency:
+          type: string
+        imageUrl:
+          type: string
+          nullable: true
+      required: [symbol, name, category, price, currency]
+
+    UpdateAssetRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        price:
+          type: number
+        currency:
+          type: string
+        category:
+          type: string
+          enum: [crypto, stock, etf, forex, commodity]
+        change24h:
+          type: number
+        imageUrl:
+          type: string
+          nullable: true
+        available:
+          type: boolean
+
+    AdminTradeRow:
+      allOf:
+        - $ref: "#/components/schemas/Trade"
+        - type: object
+          properties:
+            userId:
+              type: string
+            userName:
+              type: string
+            userEmail:
+              type: string
+          required: [userId, userName, userEmail]
+
+    CreateAdminTradeRequest:
+      type: object
+      properties:
+        pair:
+          type: string
+        type:
+          type: string
+          enum: [long, short]
+        amount:
+          type: number
+        entryPrice:
+          type: number
+        currentPrice:
+          type: number
+        targetPrice:
+          type: number
+        currency:
+          type: string
+        profit:
+          type: number
+        expectedProfit:
+          type: number
+        managerId:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum: [active, completed, cancelled]
+      required: [pair, type, amount, entryPrice, currentPrice, targetPrice, currency, profit, expectedProfit]
+
+    UpdateAdminTradeRequest:
+      type: object
+      properties:
+        pair:
+          type: string
+        type:
+          type: string
+          enum: [long, short]
+        amount:
+          type: number
+        entryPrice:
+          type: number
+        currentPrice:
+          type: number
+        targetPrice:
+          type: number
+        profit:
+          type: number
+        expectedProfit:
+          type: number
+        managerId:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum: [active, completed, cancelled]
+
+    CreateUserRequest:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+        fullName:
+          type: string
+        username:
+          type: string
+        country:
+          type: string
+        phone:
+          type: string
+          nullable: true
+        role:
+          type: string
+          enum: [user, admin, demo]
+        kycVerified:
+          type: boolean
+        merchant:
+          type: boolean
+      required: [email, password, fullName, username, country, role]
+
+    UpdateUserProfileRequest:
+      type: object
+      properties:
+        fullName:
+          type: string
+        username:
+          type: string
+        email:
+          type: string
+        country:
+          type: string
+        phone:
+          type: string
+          nullable: true
+        password:
+          type: string
+          description: New password (omit to leave unchanged)
+
+    UpdateUserStatusRequest:
+      type: object
+      properties:
+        role:
+          type: string
+          enum: [user, admin, demo]
+        kycVerified:
+          type: boolean
+        tradingLocked:
+          type: boolean
+        socialLocked:
+          type: boolean
+        demoMode:
+          type: boolean
+        merchant:
+          type: boolean
+        accountFlag:
+          type: string
+          nullable: true
+        suspended:
+          type: boolean
+        disabled:
+          type: boolean
+        resetKyc:
+          type: boolean
+          description: When true, the user's KYC submission is wiped back to `not_submitted` and they are forced to re-submit.
+
+    UpdateBankAccountRequest:
+      type: object
+      properties:
+        bankName:
+          type: string
+        accountHolder:
+          type: string
+        last4:
+          type: string
+        currency:
+          type: string
+        verified:
+          type: boolean
+        isDefault:
+          type: boolean
+        fiatBalance:
+          type: number
+          description: Set the user-facing fiat balance shown on the Wallets/Dashboard.
+        fiatCurrency:
+          type: string
+          description: ISO currency code for the fiat balance.
+
+    UpdateOwnBankAccountRequest:
+      type: object
+      properties:
+        fiatBalance:
+          type: number
+          description: User self-reported fiat balance for this account.
+        fiatCurrency:
+          type: string
+          description: Optional override for the fiat currency (defaults to the bank's currency).
+
+    UpdateOwnProfileRequest:
+      type: object
+      properties:
+        moonpayEmail:
+          type: string
+          nullable: true
+          description: User's MoonPay account email (use empty string or null to unlink).
+
+    MoonpayInitiateRequest:
+      type: object
+      properties:
+        assetSymbol:
+          type: string
+          description: Crypto asset symbol to purchase (e.g. BTC, ETH, USDT).
+        fiatAmount:
+          type: number
+          minimum: 1
+          description: Fiat amount the user wants to spend.
+        fiatCurrency:
+          type: string
+          description: Fiat currency code (e.g. USD, EUR).
+        destinationAddress:
+          type: string
+          description: Wallet address that should receive the purchased crypto.
+        destinationKind:
+          type: string
+          enum: [platform, external, custom]
+          description: Source of the destination address.
+      required: [assetSymbol, fiatAmount, fiatCurrency, destinationAddress, destinationKind]
+
+    MoonpayInitiateResponse:
+      type: object
+      properties:
+        url:
+          type: string
+          description: Hosted MoonPay checkout URL the user should be redirected to.
+        sandbox:
+          type: boolean
+          description: True when the URL points at MoonPay sandbox (no live API key configured).
+        signed:
+          type: boolean
+          description: True when the URL was HMAC-signed using the configured MoonPay secret.
+        configured:
+          type: boolean
+          description: True when MOONPAY_API_KEY is configured server-side.
+        autoFilled:
+          type: boolean
+          description: True when user identity (email/name) was auto-filled into the URL.
+        notice:
+          type: string
+          nullable: true
+          description: Optional human-readable notice to surface in the dialog.
+      required: [url, sandbox, signed, configured, autoFilled]
+
+    MoonpayWebhookEvent:
+      type: object
+      description: A subset of the MoonPay webhook payload we react to.
+      properties:
+        type:
+          type: string
+          description: Event type, e.g. "transaction_updated" or "transaction_completed".
+        data:
+          type: object
+          description: The MoonPay transaction object.
+          properties:
+            id:
+              type: string
+            status:
+              type: string
+              description: e.g. pending, completed, failed.
+            walletAddress:
+              type: string
+              nullable: true
+            currency:
+              type: object
+              nullable: true
+              properties:
+                code:
+                  type: string
+            cryptoTransactionId:
+              type: string
+              nullable: true
+            quoteCurrencyAmount:
+              type: number
+              nullable: true
+              description: Amount of crypto purchased.
+            baseCurrencyAmount:
+              type: number
+              nullable: true
+              description: Fiat amount spent.
+            baseCurrencyCode:
+              type: string
+              nullable: true
+            externalCustomerId:
+              type: string
+              nullable: true
+              description: Platform user id we passed in the checkout URL.
+            externalTransactionId:
+              type: string
+              nullable: true
+              description: Server-generated id we passed at /moonpay/initiate; used to look up the original destination so the webhook only credits platform wallets when the user picked one.
+          required: [id, status]
+      required: [type, data]
+
+    CoinbaseInitiateRequest:
+      type: object
+      properties:
+        assetSymbol:
+          type: string
+        fiatAmount:
+          type: number
+          minimum: 1
+        fiatCurrency:
+          type: string
+        destinationAddress:
+          type: string
+        destinationKind:
+          type: string
+          enum: [platform, external, custom]
+      required: [assetSymbol, fiatAmount, fiatCurrency, destinationAddress, destinationKind]
+
+    CoinbaseInitiateResponse:
+      type: object
+      properties:
+        url:
+          type: string
+        sandbox:
+          type: boolean
+        signed:
+          type: boolean
+        configured:
+          type: boolean
+        autoFilled:
+          type: boolean
+        notice:
+          type: string
+          nullable: true
+      required: [url, sandbox, signed, configured, autoFilled]
+
+    CoinbaseStatusResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        status:
+          type: string
+          enum: [pending, completed, skipped_external, unknown]
+        outcome:
+          type: string
+          nullable: true
+          enum: [credited, skipped_external]
+        walletId:
+          type: string
+          nullable: true
+        cryptoAmount:
+          type: number
+          nullable: true
+        cryptoCode:
+          type: string
+          nullable: true
+        processedAt:
+          type: string
+          format: date-time
+          nullable: true
+        destinationKind:
+          type: string
+          nullable: true
+          enum: [platform, external, custom]
+        destinationAddress:
+          type: string
+          nullable: true
+        assetSymbol:
+          type: string
+          nullable: true
+        fiatAmount:
+          type: number
+          nullable: true
+        fiatCurrency:
+          type: string
+          nullable: true
+      required: [id, status]
+
+    CoinbaseWebhookEvent:
+      type: object
+      properties:
+        type:
+          type: string
+        data:
+          type: object
+          properties:
+            id:
+              type: string
+            status:
+              type: string
+            walletAddress:
+              type: string
+              nullable: true
+            currency:
+              type: object
+              nullable: true
+              properties:
+                code:
+                  type: string
+            quoteCurrencyAmount:
+              type: number
+              nullable: true
+            baseCurrencyAmount:
+              type: number
+              nullable: true
+            baseCurrencyCode:
+              type: string
+              nullable: true
+            externalCustomerId:
+              type: string
+              nullable: true
+            externalTransactionId:
+              type: string
+              nullable: true
+          required: [id, status]
+      required: [type, data]
+
+    P2PMerchantApplication:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        userName:
+          type: string
+        userEmail:
+          type: string
+        displayName:
+          type: string
+        legalName:
+          type: string
+          description: Applicant's legal full name.
+        contactEmail:
+          type: string
+          description: Best email address to reach the applicant on.
+        country:
+          type: string
+          description: ISO country code where the applicant is based.
+        paymentMethod:
+          type: string
+          enum: [etransfer, bank]
+          description: Primary payment method the merchant will accept buyer funds on.
+        payoutEmail:
+          type: string
+          description: E-Transfer / payout email (used when paymentMethod is etransfer).
+        bankInfo:
+          type: string
+          description: Bank receiving info (used when paymentMethod is bank).
+        assets:
+          type: string
+        reason:
+          type: string
+        status:
+          type: string
+          enum: [pending, approved, rejected]
+        rejectionReason:
+          type: string
+          nullable: true
+        submittedAt:
+          type: string
+        decidedAt:
+          type: string
+          nullable: true
+      required: [id, userId, userName, userEmail, displayName, legalName, contactEmail, country, paymentMethod, payoutEmail, bankInfo, assets, reason, status, submittedAt]
+
+    P2PMerchantApplicationOrNull:
+      type: object
+      properties:
+        application:
+          $ref: "#/components/schemas/P2PMerchantApplication"
+          nullable: true
+        isMerchant:
+          type: boolean
+      required: [isMerchant]
+
+    SubmitP2PMerchantApplicationRequest:
+      type: object
+      properties:
+        displayName:
+          type: string
+        legalName:
+          type: string
+        contactEmail:
+          type: string
+        country:
+          type: string
+          description: ISO country code (e.g. CA, US, JP).
+        paymentMethod:
+          type: string
+          enum: [etransfer, bank]
+        payoutEmail:
+          type: string
+          description: E-Transfer / payout email. Required when paymentMethod is etransfer.
+        bankInfo:
+          type: string
+          description: Bank receiving info. Required when paymentMethod is bank.
+        assets:
+          type: string
+        reason:
+          type: string
+      required: [displayName, legalName, contactEmail, country, paymentMethod, payoutEmail, bankInfo, assets, reason]
+
+    P2PMerchantDecisionRequest:
+      type: object
+      properties:
+        decision:
+          type: string
+          enum: [approve, reject]
+        reason:
+          type: string
+          nullable: true
+      required: [decision]
+
+    AdminP2PMerchantSummary:
+      type: object
+      properties:
+        userId:
+          type: string
+        userName:
+          type: string
+        userEmail:
+          type: string
+        displayName:
+          type: string
+        approvedAt:
+          type: string
+          nullable: true
+        totalListings:
+          type: integer
+      required: [userId, userName, userEmail, displayName, totalListings]
+
+    AdminP2PMerchantsResponse:
+      type: object
+      properties:
+        applications:
+          type: array
+          items:
+            $ref: "#/components/schemas/P2PMerchantApplication"
+        merchants:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminP2PMerchantSummary"
+      required: [applications, merchants]
+
+    AdminP2PNotifyRequest:
+      type: object
+      properties:
+        kind:
+          type: string
+          enum: [general, deposit_incoming, deposit_confirmed, p2p_deposit, order_update]
+          description: Notification flavour. `deposit_*` variants surface amount/reference/instructions.
+        title:
+          type: string
+        message:
+          type: string
+        amount:
+          type: number
+          nullable: true
+          description: For deposit notifications, the deposit amount in `currency`.
+        currency:
+          type: string
+          nullable: true
+        asset:
+          type: string
+          nullable: true
+          description: Asset symbol the deposit relates to (e.g. BTC, USDT).
+        reference:
+          type: string
+          nullable: true
+          description: External reference (txid, wire ref, escrow id).
+        instructions:
+          type: string
+          nullable: true
+          description: Free-form follow-up instructions for the merchant.
+      required: [title, message]
+
+    SendAdminP2PChatRequest:
+      type: object
+      properties:
+        content:
+          type: string
+      required: [content]
+
+    Notification:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        kind:
+          type: string
+          description: Notification category (e.g. withdrawal_gas_fee_required, account_suspended).
+        title:
+          type: string
+        body:
+          type: string
+        read:
+          type: boolean
+        link:
+          type: string
+          nullable: true
+          description: Optional in-app deep link to surface alongside the notification.
+        createdAt:
+          type: string
+      required: [id, userId, kind, title, body, read, createdAt]
+
+    AdminAlert:
+      type: object
+      properties:
+        id:
+          type: string
+        kind:
+          type: string
+        title:
+          type: string
+        body:
+          type: string
+        userId:
+          type: string
+          nullable: true
+        userEmail:
+          type: string
+          nullable: true
+        severity:
+          type: string
+          enum: [info, warning, critical]
+        read:
+          type: boolean
+        createdAt:
+          type: string
+        linkUrl:
+          type: string
+          nullable: true
+          description: Admin portal deep-link the alert should navigate to when clicked.
+      required: [id, kind, title, body, severity, read, createdAt]
+
+    NotificationSettings:
+      type: object
+      description: |
+        Admin-controlled toggle map for emailing the user when each kind of
+        platform event happens. In-app notifications are always created;
+        these flags only affect the email side-channel.
+      properties:
+        withdrawalGasFeeRequired:
+          type: boolean
+        withdrawalApproved:
+          type: boolean
+        withdrawalRejected:
+          type: boolean
+        withdrawalExpired:
+          type: boolean
+        kycApproved:
+          type: boolean
+        kycRejected:
+          type: boolean
+        kycReset:
+          type: boolean
+        accountSuspended:
+          type: boolean
+        accountDisabled:
+          type: boolean
+        accountFlagged:
+          type: boolean
+        broadcastTicket:
+          type: boolean
+        mailboxReply:
+          type: boolean
+        liveChatHandoff:
+          type: boolean
+        withdrawalSubmitted:
+          type: boolean
+        depositReceived:
+          type: boolean
+        p2pOrderUpdate:
+          type: boolean
+        tradeOpened:
+          type: boolean
+        walletTransfer:
+          type: boolean
+      required:
+        [withdrawalGasFeeRequired, withdrawalApproved, withdrawalRejected,
+         withdrawalExpired, kycApproved, kycRejected, kycReset,
+         accountSuspended, accountDisabled, accountFlagged,
+         broadcastTicket, mailboxReply, liveChatHandoff,
+         withdrawalSubmitted, depositReceived, p2pOrderUpdate,
+         tradeOpened, walletTransfer]
+
+    SentEmail:
+      type: object
+      properties:
+        id:
+          type: string
+        to:
+          type: string
+        from:
+          type: string
+        subject:
+          type: string
+        body:
+          type: string
+        kind:
+          type: string
+        sentAt:
+          type: string
+      required: [id, to, from, subject, body, kind, sentAt]
+
+    BroadcastSupportTicketBody:
+      type: object
+      properties:
+        subject:
+          type: string
+        message:
+          type: string
+        imageUrl:
+          type: string
+          nullable: true
+          description: |
+            Optional image attachment URL persisted on the broadcast
+            payload (mailbox message or support ticket message).
+        priority:
+          type: string
+          enum: [low, medium, high, urgent]
+        mode:
+          type: string
+          enum: [ticket, mailbox]
+          description: "ticket = create a personal support ticket per recipient; mailbox = create a mailbox thread."
+        filters:
+          type: object
+          description: Recipient filters. Omit for all non-admin users.
+          properties:
+            kycStatus:
+              type: string
+              enum: [any, not_submitted, pending, approved, rejected]
+            country:
+              type: string
+              nullable: true
+            merchant:
+              type: string
+              enum: [any, only, exclude]
+      required: [subject, message, priority]
+
+    BroadcastResult:
+      type: object
+      properties:
+        recipients:
+          type: integer
+        mode:
+          type: string
+          enum: [ticket, mailbox]
+        skipped:
+          type: integer
+          description: Number of users that did not match the filters.
+      required: [recipients]
+
+    AdminPresenceState:
+      type: object
+      properties:
+        onlineAdminCount:
+          type: integer
+        anyOnline:
+          type: boolean
+        admins:
+          type: array
+          items:
+            type: object
+            properties:
+              userId:
+                type: string
+              email:
+                type: string
+              fullName:
+                type: string
+              lastSeenAt:
+                type: string
+            required: [userId, email, fullName, lastSeenAt]
+      required: [onlineAdminCount, anyOnline, admins]
+
+    AdminSetWithdrawalGasFeeBody:
+      type: object
+      properties:
+        gasFeeAmount:
+          type: number
+          minimum: 0
+          description: ETH amount the user must fund as gas fee.
+        deadlineMinutes:
+          type: integer
+          minimum: 1
+          description: Minutes from now that the user has to fund the fee before the withdrawal expires.
+      required: [gasFeeAmount, deadlineMinutes]
+
+    MarkGasFeeFundedBody:
+      type: object
+      properties:
+        txHash:
+          type: string
+          description: On-chain tx hash proving the user funded the gas fee.
+      required: [txHash]

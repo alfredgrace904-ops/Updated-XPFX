@@ -1,0 +1,134 @@
+Please build a complete live chat and support chatbot system into the project. Do all steps in order and do not break any existing functionality.
+
+STEP 1 - Add chat database schema:
+Open lib/db/src/schema and create or update the messages/chat schema to add a support_chat table with these fields:
+  id: uuid primary key defaultRandom
+  sessionId: text not null (for non-logged-in visitors using a random session ID)
+  userId: uuid nullable (set if the visitor is a logged-in user)
+  visitorName: text nullable
+  visitorEmail: text nullable
+  message: text not null
+  fromAdmin: boolean default false
+  isRead: boolean default false
+  createdAt: timestamp defaultNow
+
+Also add a support_chat_sessions table:
+  id: uuid primary key defaultRandom
+  sessionId: text not null unique
+  userId: uuid nullable
+  visitorName: text nullable
+  visitorEmail: text nullable
+  status: text default "open" (values: open, closed, resolved)
+  lastMessageAt: timestamp defaultNow
+  createdAt: timestamp defaultNow
+
+Run: cd lib/db && npx drizzle-kit push
+
+STEP 2 - Add support chat API routes:
+Create a new route file artifacts/api-server/src/routes/support-chat.ts with these routes:
+
+POST /support-chat/session
+- Creates or retrieves a chat session using sessionId from request body
+- Accepts: sessionId, visitorName (optional), visitorEmail (optional), userId (optional)
+- Returns the session object
+
+POST /support-chat/message
+- Accepts: sessionId, message, visitorName (optional), visitorEmail (optional)
+- Saves the message to support_chat table with fromAdmin false
+- Returns the saved message
+
+GET /support-chat/messages/:sessionId
+- Returns all messages for a session ordered by createdAt asc
+- Polls every 3 seconds from frontend
+
+POST /support-chat/admin/reply
+- Protected with admin auth middleware
+- Accepts: sessionId, message
+- Saves message with fromAdmin true
+- Returns the saved message
+
+GET /support-chat/admin/sessions
+- Protected with admin auth middleware
+- Returns all chat sessions ordered by lastMessageAt desc
+- Include unread message count per session
+- Include last message preview
+
+PATCH /support-chat/admin/sessions/:sessionId/status
+- Protected with admin auth middleware
+- Accepts: status (open, closed, resolved)
+- Updates session status
+- Returns updated session
+
+GET /support-chat/admin/sessions/:sessionId/messages
+- Protected with admin auth middleware
+- Returns all messages for a session
+
+Register the new route file in artifacts/api-server/src/app.ts or index.ts
+
+STEP 3 - Add Zod schemas and regenerate client hooks:
+Add Zod schemas for all support chat request bodies in lib/api-zod/src
+Regenerate client hooks in lib/api-client-react/src
+
+STEP 4 - Build the live chat widget for the main website:
+Create a new file artifacts/nextrade/src/components/SupportChatWidget.tsx
+
+The widget should:
+- Appear as a floating chat bubble button fixed at the bottom right corner of every page
+- Show a red unread badge when there are new admin replies
+- Clicking it opens a chat panel sliding up from the bottom right
+- The panel header shows "XpressPro FX Support" with a green online dot and a close button
+- First time opening it shows a welcome form asking for name and email before starting chat (skip if user is already logged in)
+- After submitting name and email or if already logged in, show the chat message thread
+- Messages from visitor appear on the right in blue bubbles
+- Messages from admin appear on the left in gray bubbles with "Support" label
+- At the bottom is a text input and Send button
+- Generate a random sessionId and store it in localStorage on first visit
+- Poll GET /support-chat/messages/:sessionId every 3 seconds to get new admin replies
+- Show a typing indicator when waiting for reply
+- Show timestamps on each message
+- The widget works for both logged-in users and non-logged-in visitors
+
+Import and add the SupportChatWidget component to the main layout file so it appears on every page of the NeXTrade website including the home/landing page
+
+STEP 5 - Build the admin support chat dashboard:
+Create a new file artifacts/admin-portal/src/pages/support-chat.tsx
+
+The page should:
+- Show a two-panel layout: left panel is session list, right panel is active conversation
+- Left panel lists all chat sessions with visitor name, email, last message preview, unread count badge, status indicator, and time of last message
+- Sessions are sorted by most recent first
+- Filter tabs at top: All, Open, Resolved
+- Clicking a session opens it in the right panel
+- Right panel shows full message thread with visitor messages on right and admin replies on left
+- At the bottom of the right panel is a text input and Send Reply button that calls POST /support-chat/admin/reply
+- Status dropdown to change session to open, closed, or resolved
+- Auto refreshes every 5 seconds to show new visitor messages
+- Show unread count badge on the Support Chat link in the admin sidebar
+
+Register support-chat.tsx in artifacts/admin-portal/src/App.tsx router
+Add "Support Chat" with a chat icon and unread badge to artifacts/admin-portal/src/components/sidebar.tsx
+
+STEP 6 - Add the chat widget to the coming soon or landing page:
+Find the main landing page or home page of the NeXTrade frontend
+Make sure the SupportChatWidget is visible even before a user logs in
+It should show on the very first page a visitor sees when they open the website
+
+STEP 7 - Add real time feel with polling:
+In SupportChatWidget set up polling every 3 seconds when the chat panel is open
+Stop polling when the panel is closed to save resources
+In the admin support chat page poll every 5 seconds when a conversation is open
+Show a green online indicator on the widget to make it feel live
+
+STEP 8 - Style the widget professionally:
+The floating button should be a round green or blue button with a chat icon
+The chat panel should have a professional financial platform look with:
+  - Dark header with company name and logo
+  - Clean white message area
+  - Blue send button
+  - Smooth open and close animation
+Make it look trustworthy and professional for a trading platform
+
+STEP 9 - Run TypeScript check:
+Run TypeScript check across all packages and fix any errors found
+Restart all servers and confirm everything is running cleanly
+Show a summary of all files created or modified

@@ -1,0 +1,392 @@
+You are a senior full-stack fintech engineer.
+
+TASK:
+Rebuild, upgrade, and fully create a COMPLETE, production-ready forex fintech broker trading and investment platform from the uploaded ZIP or from scratch.
+
+The system must be scalable, secure, modern, and deployable instantly on:
+- Replit
+- Render
+- VPS
+- Any Node.js environment
+
+It must behave like a real-world trading platform (NOT a demo).
+
+────────────────────────────────────
+
+CORE RULES:
+
+- Use ONLY JavaScript (Node.js)
+- NO TypeScript anywhere
+- Use official APIs and OAuth 2.0 for integrations
+- Use secure token storage with refresh mechanisms
+- No broken code, placeholders, or missing files
+- Everything must run immediately after setup
+
+────────────────────────────────────
+
+1. TECH STACK
+
+Backend:
+- Node.js + Express.js
+- PostgreSQL (Neon database ONLY)
+- dotenv
+- JWT authentication
+- bcrypt
+- Speakeasy (2FA)
+- WebSockets (for trading/live updates)
+
+Frontend:
+- React (JavaScript only)
+- Vite
+- Modern fintech UI (Binance/Wealthsimple style)
+- Dark/light mode
+- Fully responsive
+
+────────────────────────────────────
+
+2. PROJECT STRUCTURE
+
+/app
+  /client (React frontend)
+/server (Express backend)
+/config
+/services
+/database
+/auth
+/payments
+/trading
+/security
+/utils
+/oauth
+/kyc
+/admin
+
+/server
+  /routes
+  /controllers
+  /models
+  /middleware
+  server.js
+
+/client
+  /src
+  /components
+  /pages
+  App.js
+
+────────────────────────────────────
+
+3. ENVIRONMENT VARIABLES (.env.example)
+
+DATABASE_URL=
+JWT_SECRET=
+PORT=5000
+
+MT5_API_URL=
+MT5_API_KEY=
+
+PAYPAL_CLIENT_ID=
+PAYPAL_SECRET=
+
+STRIPE_SECRET_KEY=
+
+COINBASE_CLIENT_ID=
+COINBASE_SECRET=
+
+MOONPAY_API_KEY=
+
+CRYPTO_API_KEY=
+FIAT_API_KEY=
+
+────────────────────────────────────
+
+4. DATABASE (Neon PostgreSQL)
+
+Use DATABASE_URL only.
+
+Tables:
+
+users:
+- id
+- email
+- password
+- role
+- balance
+- is_verified
+- twofa_secret
+- created_at
+
+wallets:
+- id
+- user_id
+- currency
+- balance
+
+transactions:
+- id
+- user_id
+- type
+- method
+- amount
+- status
+- created_at
+
+trades:
+- id
+- user_id
+- pair
+- amount
+- profit
+- status
+- created_at
+
+oauth_accounts:
+- id
+- user_id
+- provider
+- access_token
+- refresh_token
+- expires_at
+
+kyc_submissions:
+- id
+- user_id
+- document
+- selfie
+- address_proof
+- status
+
+verification_status:
+- user_id
+- level
+
+deposits
+withdrawals
+
+────────────────────────────────────
+
+5. AUTH SYSTEM
+
+- Register / Login / Logout
+- JWT authentication
+- bcrypt hashing
+- 2FA (Google Authenticator)
+- Email verification ready
+- Role-based access (admin/user)
+
+────────────────────────────────────
+
+6. WALLET SYSTEM
+
+- Multi-currency wallet
+- Trading balance
+- Deposit / Withdrawal tracking
+
+────────────────────────────────────
+
+7. TRADING SYSTEM
+
+- Simulated forex engine
+- MT5 API integration (real or placeholder)
+- WebSocket live price feed
+- Buy / Sell execution
+- Profit/Loss calculation
+- Trade history
+
+────────────────────────────────────
+
+8. PAYMENT SYSTEM
+
+Payment Router must support:
+
+- PayPal (OAuth + Checkout + Webhooks)
+- Stripe (cards + bank)
+- Crypto:
+  - Coinbase API
+  - MoonPay (redirect + webhook)
+
+Features:
+- Payment routing logic
+- Webhook handling
+- Status tracking
+
+────────────────────────────────────
+
+9. OAUTH INTEGRATIONS
+
+Providers:
+- PayPal
+- Coinbase
+
+Features:
+- Connect accounts
+- Store encrypted tokens
+- Auto-refresh tokens
+- No repeated login
+
+────────────────────────────────────
+
+10. SMARTVEST INVESTMENT SYSTEM
+
+Accounts:
+- Growth Account
+- Home Account
+
+Features:
+- Investment tracking
+- Simulated returns
+- Balance management
+
+────────────────────────────────────
+
+11. KYC / AML SYSTEM
+
+Verification Levels:
+- Level 1: Email
+- Level 2: ID upload
+- Level 3: Payment linked
+- Level 4: Full verification
+
+Features:
+- ID upload
+- Selfie verification
+- Address proof
+- Status tracking
+
+Admin:
+- Approve / Reject KYC
+- View documents
+
+Optional:
+- Stripe Identity / Sumsub / Onfido integration ready
+
+────────────────────────────────────
+
+12. ADMIN PANEL
+
+- Manage users
+- Approve KYC
+- Approve/reject deposits
+- Approve withdrawals
+- Monitor transactions
+- System analytics
+
+DO NOT expose sensitive financial data.
+
+────────────────────────────────────
+
+13. SECURITY (CRITICAL)
+
+- JWT authentication
+- bcrypt hashing
+- 2FA
+- Rate limiting
+- Input validation (Joi/Zod)
+- Helmet
+- Encrypt sensitive tokens/data
+- Anti-fraud:
+  - Flag large withdrawals
+  - Detect suspicious login activity
+
+────────────────────────────────────
+
+14. FRONTEND UI
+
+Pages:
+
+- Landing page (premium broker design)
+- Login/Register
+- Dashboard (balance, trades)
+- Wallet
+- Trading Terminal
+- SmartVest Accounts
+- Linked Accounts
+- KYC Verification
+- Admin Panel
+- Settings
+
+UI:
+- Dark/light mode
+- Charts (TradingView or chart.js)
+- Cards, tables, modals
+- Clean modern layout
+
+────────────────────────────────────
+
+15. SPECIAL REQUIREMENT (VERY IMPORTANT)
+
+Create a standalone file:
+
+/production-ready-app.js
+
+This file MUST:
+- Include FULL backend server
+- Include ALL routes
+- Connect to Neon DB
+- Include auth, trading, payments, KYC, admin
+- Be completely self-contained
+
+Must run with:
+
+npm install
+node production-ready-app.js
+
+Must work on:
+- Replit
+- Render
+- VPS
+- Local machine
+
+────────────────────────────────────
+
+16. DEPLOYMENT READY
+
+- Use:
+  const PORT = process.env.PORT || 3000;
+
+- package.json:
+  "start": "node server/server.js"
+
+- No hardcoded configs
+- Fully production-ready
+
+────────────────────────────────────
+
+17. TEST MODE
+
+- Sandbox mode
+- Production mode toggle
+
+────────────────────────────────────
+
+18. BUILD CLEANUP
+
+- Remove build.cjs
+- Remove zip extraction logic
+- Ensure direct run
+
+────────────────────────────────────
+
+19. OUTPUT REQUIREMENTS
+
+- Complete working system
+- No missing files
+- No placeholder code
+- Fully functional frontend + backend
+- Clean architecture
+- Production-ready
+
+────────────────────────────────────
+
+FINAL GOAL:
+
+Build a real-world forex fintech broker trading and investment platform with:
+
+- Professional UI (like Binance)
+- Realistic trading system
+- Secure financial architecture
+- OAuth integrations
+- Payment systems
+- KYC/AML verification
+
+System must run instantly after setup on ANY platform.
