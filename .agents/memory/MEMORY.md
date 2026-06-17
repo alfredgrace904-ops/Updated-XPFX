@@ -3,3 +3,4 @@
 - [Rate limiter IPv6 fix](rate-limiter-ipv6.md) — express-rate-limit v8 needs validate: { keyGeneratorIpFallback: false } to suppress IPv6 warning on custom keyGenerators; keyGenerator: false is not a valid key.
 - [Deployment layout](deployment-layout.md) — artifacts/ source is committed (not gitignored); dist/ is gitignored; build = pnpm install + pnpm --filter @workspace/api-server build; pre-built binary was in ZIP only.
 - [CORS multi-platform](cors-multi-platform.md) — app.ts reads ALLOWED_ORIGINS (full URLs) and REPLIT_DOMAINS (hostnames) for allowed origins; set ALLOWED_ORIGINS on Render/Railway/VPS.
+- [Artifact workflow ports](artifact-workflow-ports.md) — Replit artifact workflows cannot be reconfigured via configureWorkflow (PROHIBITED_ACTION); Replit assigns each artifact its own PORT env override (25849 for nextrade, 25580 for admin-portal); vite.config.ts must NOT crash when PORT=8080 is in shared env.

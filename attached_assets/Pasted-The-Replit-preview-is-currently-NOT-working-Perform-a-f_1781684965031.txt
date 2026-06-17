@@ -1,0 +1,100 @@
+The Replit preview is currently NOT working.
+
+Perform a full diagnosis and fix to ensure the application runs correctly and the preview loads successfully.
+
+--------------------------------------------------
+
+🔴 1. FIX REPLIT PREVIEW (CRITICAL)
+
+- Identify why preview shows:
+  "The app is running, but preview isn't ready"
+
+- Ensure:
+  - Server listens on: 0.0.0.0
+  - Uses: process.env.PORT || 3000
+  - Correct port is exposed
+
+- Fix startup command so Replit can detect the running server
+
+- Ensure:
+  - No crashes during startup
+  - No silent build failures
+
+--------------------------------------------------
+
+🔴 2. FIX STARTUP + RUN CONFIG
+
+- Ensure correct root scripts exist:
+  - "dev"
+  - "build"
+  - "start"
+
+- Ensure:
+  - npm/pnpm run dev works in Replit
+  - App boots without errors
+
+--------------------------------------------------
+
+🔴 3. FIX ALL DEPENDENCY ISSUES
+
+- Remove any broken or invalid dependencies (e.g. "catalog:")
+- Install correct stable versions
+- Ensure:
+  - pnpm install works with ZERO errors
+  - No missing packages
+  - No version conflicts
+
+--------------------------------------------------
+
+🔴 4. FIX BUILD FAILURES
+
+- Check both:
+  - backend (API server)
+  - frontend (Vite app)
+
+- Ensure:
+  - build completes successfully
+  - no missing imports
+  - no runtime crashes
+
+--------------------------------------------------
+
+🔴 5. ENSURE FRONTEND + BACKEND RUN TOGETHER
+
+- Ensure frontend can load in preview
+- Ensure API is reachable
+- Fix any port mismatch issues
+
+--------------------------------------------------
+
+🟡 6. PREVENT FUTURE DEPLOYMENT FAILURES
+
+- Fix anything that could break:
+  - Render deploy
+  - Railway deploy
+  - VPS deploy
+
+- Ensure:
+  - npm install && npm run build && npm start works cleanly
+
+--------------------------------------------------
+
+⚙️ 7. FINAL VALIDATION
+
+After fixes:
+
+- Run full install
+- Run dev server
+- Confirm:
+  ✔ Preview loads
+  ✔ No console errors
+  ✔ App is accessible in browser
+
+--------------------------------------------------
+
+🎯 FINAL GOAL
+
+- Replit preview must load successfully
+- No dependency errors
+- No startup crashes
+- Project must remain production-ready for deployment

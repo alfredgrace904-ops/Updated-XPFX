@@ -4,27 +4,16 @@ import tailwindcss from "@tailwindcss/vite";
 import path from "path";
 import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
 
-const rawPort = process.env.PORT;
-
-if (!rawPort) {
-  throw new Error(
-    "PORT environment variable is required but was not provided.",
-  );
-}
-
+// Port: prefer ADMIN_PORT, fall back to PORT if available and not taken by API,
+// otherwise default to 8081.
+const rawPort =
+  process.env.ADMIN_PORT ??
+  (process.env.PORT && process.env.PORT !== "8080" ? process.env.PORT : undefined) ??
+  "8081";
 const port = Number(rawPort);
 
-if (Number.isNaN(port) || port <= 0) {
-  throw new Error(`Invalid PORT value: "${rawPort}"`);
-}
-
-const basePath = process.env.BASE_PATH;
-
-if (!basePath) {
-  throw new Error(
-    "BASE_PATH environment variable is required but was not provided.",
-  );
-}
+// Base path — admin portal is served under /xpadmin/.
+const basePath = process.env.BASE_PATH ?? "/xpadmin/";
 
 export default defineConfig({
   base: basePath,
@@ -65,6 +54,12 @@ export default defineConfig({
     allowedHosts: true,
     fs: {
       strict: true,
+    },
+    proxy: {
+      "/api": {
+        target: "http://localhost:8080",
+        changeOrigin: true,
+      },
     },
   },
   preview: {
