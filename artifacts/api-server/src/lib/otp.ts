@@ -8,6 +8,7 @@
 import { randomInt } from "node:crypto";
 import { logger } from "./logger";
 import { hasSmtpCredentials, isProduction } from "./env";
+import { sendEmail } from "./email";
 
 interface SignupPayload {
   email: string;
@@ -48,24 +49,36 @@ function maskEmail(email: string): string {
 }
 
 function sendOtpEmail(email: string, code: string, intent: OtpIntent): void {
-  const smtpConfigured = hasSmtpCredentials;
   const subject =
     intent === "signup"
       ? "Your XpressPro FX signup verification code"
       : "Your XpressPro FX login verification code";
+
+  const body = [
+    `Your verification code is: ${code}`,
+    "",
+    "This code expires in 10 minutes.",
+    "Do not share it with anyone.",
+    "",
+    "If you did not request this code, you can safely ignore this email.",
+    "",
+    "— XpressPro FX",
+  ].join("\n");
+
+  // Real email delivery via SendGrid / SMTP (fire-and-forget; sendEmail logs internally)
+  void sendEmail({ to: email, subject, body, kind: `otp_${intent}` });
+
+  // Always log delivery metadata (never the code itself in production)
   if (isProduction) {
-    // In production, never log the OTP code — only log non-sensitive delivery metadata.
-    // Wire a real SMTP/email transport here before going live.
     logger.info(
-      { to: maskEmail(email), subject, smtpConfigured },
-      "[otp] Verification code issued (production — code omitted from logs)",
+      { to: maskEmail(email), subject, smtpConfigured: hasSmtpCredentials },
+      "[otp] Verification code sent",
     );
   } else {
-    // Development only: log the code to stdout so it can be used without a
-    // real email transport wired up.
+    // Development: also print the code so the flow works without real email credentials
     logger.info(
-      { to: maskEmail(email), subject, smtpConfigured },
-      "[otp] Verification code generated (stub send — real SMTP not yet wired)",
+      { to: maskEmail(email), subject, smtpConfigured: hasSmtpCredentials },
+      "[otp] Verification code sent (dev — also printing to stdout)",
     );
     // eslint-disable-next-line no-console
     console.log(

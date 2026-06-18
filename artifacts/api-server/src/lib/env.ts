@@ -70,6 +70,15 @@ export const env = {
   // SendGrid (optional — email.ts falls back to SMTP, then to logged-only)
   SENDGRID_API_KEY: get("SENDGRID_API_KEY"),
 
+  // Database (optional — falls back to in-memory only when missing)
+  DATABASE_URL: get("DATABASE_URL"),
+
+  // JWT signing secret (optional — only needed if JWT auth layer is used)
+  JWT_SECRET: get("JWT_SECRET"),
+
+  // Application name used in emails and UI (defaults to platform name)
+  APP_NAME: get("APP_NAME") ?? "XpressPro FX",
+
   // Platform on-chain receiving address override
   PLATFORM_RECEIVING_ADDRESS: get("PLATFORM_RECEIVING_ADDRESS"),
 

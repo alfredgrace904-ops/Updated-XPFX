@@ -1,0 +1,173 @@
+You are a senior full-stack production engineer. Your task is to fully audit, fix, upgrade, and productionize this entire hybrid fintech forex web application so it works reliably in Replit, GitHub, and external deployments (Railway, Render, VPS, Node.js + Vite environments).
+
+🔴 CRITICAL FIXES (MUST RESOLVE)
+
+1. Fix all pnpm-related issues:
+    * Resolve lockfile mismatch errors
+    * Ensure pnpm version is consistent across environments
+    * Remove conflicting overrides
+    * Regenerate a clean pnpm-lock.yaml
+    * Ensure builds work with pnpm install --frozen-lockfile
+2. Standardize environment compatibility:
+    * Ensure project works in:
+        * Replit
+        * GitHub (CI/CD)
+        * Railway
+        * Render
+        * VPS (Node.js)
+    * Remove any Replit-only dependencies or assumptions
+3. Project structure:
+    * Ensure clean root structure
+    * Single root package.json (workspace-safe)
+    * Fix broken paths and scripts
+    * Ensure Vite build works in production
+
+⸻
+
+🟢 ENVIRONMENT VARIABLES (VERY IMPORTANT)
+
+You MUST prompt for and properly configure the following environment variables during setup:
+
+SESSION_SECRET=
+SENDGRID_API_KEY=
+ADMIN_EMAIL=
+AI_INTEGRATIONS_OPENAI_BASE_URL=
+AI_INTEGRATIONS_OPENAI_API_KEY=
+ALCHEMY_API_KEY=
+ADMIN_NOTIFY_EMAIL=
+DATABASE_URL=
+JWT_SECRET=
+ALLOWED_ORIGINS=
+APP_NAME=
+LOG_LEVEL=
+
+Requirements:
+
+* If any variable already exists → validate and update if outdated
+* Automatically create .env.example
+* Ensure .env is NOT committed to GitHub
+* Add validation (fail app startup if required vars missing)
+* Use environment variables across all services (no hardcoding)
+
+⸻
+
+🟡 DATABASE & PERSISTENCE (MANDATORY)
+
+Current issue: in-memory storage resets on restart.
+
+Fix:
+
+* Fully integrate a real database using Drizzle ORM
+* Use PostgreSQL (Neon, Supabase, or Replit DB)
+* Connect using DATABASE_URL
+* Migrate all in-memory logic to persistent storage
+* Ensure migrations run automatically on deploy
+
+⸻
+
+🟣 EMAIL & OTP SYSTEM
+
+Current issue: OTP logs to console.
+
+Fix:
+
+* Integrate real email sending using SENDGRID_API_KEY or SMTP
+* Replace console OTP with real email delivery
+* Add retry + error handling
+* Secure OTP storage and expiration
+
+⸻
+
+🔵 AUTH & SECURITY
+
+* Ensure SESSION_SECRET and JWT_SECRET are required
+* Secure authentication flows
+* Protect admin routes
+* Validate all inputs
+* Add rate limiting and basic protection
+
+⸻
+
+🟢 ADMIN PANEL (CRITICAL FUNCTIONALITY)
+
+Verify and fix:
+
+* Admin can:
+    * View users
+    * Modify user accounts
+    * Trigger actions
+* Ensure changes persist in database
+* Fix any broken admin controls
+
+⸻
+
+🟣 REAL-TIME CHAT SYSTEM (IMPORTANT FEATURE)
+
+Implement or fix:
+
+* Real-time messaging system (WebSocket or similar)
+* BOTH admin and users can:
+    * Start conversations
+    * Reply instantly
+* Include:
+    * Inbox/mailbox system
+    * Live chat UI
+    * Message persistence in database
+
+⸻
+
+🟠 FULL SYSTEM TESTING
+
+After all fixes:
+
+* Run full project test:
+    * Install dependencies
+    * Build project
+    * Start server
+* Simulate:
+    * User flows
+    * Admin actions
+    * Chat system
+* Fix ALL detected errors
+
+⸻
+
+🔴 DEPLOYMENT READINESS
+
+Ensure:
+
+* GitHub repo is clean and structured
+* Add:
+    * README.md with setup steps
+    * .env.example
+    * Production scripts
+* Verify deployment works on:
+    * Railway
+    * Render
+    * VPS
+
+⸻
+
+🟢 FINAL REQUIREMENTS
+
+* No mock systems — everything must be REAL and production-ready
+* No UI-only features — all must be functional
+* Remove dead code and bugs
+* Optimize performance
+* Ensure stability across restarts and deployments
+
+⸻
+
+✅ FINAL STEP
+
+After completing all tasks:
+
+* Re-run entire project
+* Confirm zero critical errors
+* Confirm production readiness
+
+Then provide a summary of:
+
+* Fixes made
+* Remaining risks (if any)
+* Deployment instructions

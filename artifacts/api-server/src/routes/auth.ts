@@ -1,4 +1,5 @@
 // /auth routes — signup, login, logout, session, demo, OTP verify/resend, skip-wallet.
+import { randomUUID } from "node:crypto";
 import { Router, type IRouter } from "express";
 import {
   LoginBody,
@@ -27,6 +28,9 @@ import {
   verifyPassword,
   type StoredUser,
 } from "../lib/store";
+import { dbRun } from "../lib/db-client";
+import { usersTable, userSessionsTable } from "@workspace/db/schema";
+import { eq } from "drizzle-orm";
 import {
   clearSessionCookie,
   requireAuth,
@@ -40,6 +44,32 @@ import {
   verifyOtp as verifyOtpFn,
   OTP_TTL_MS,
 } from "../lib/otp";
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
+
+/** Persist session to DB (no-op for non-UUID user IDs like demo/legacy admin) */
+function persistSession(sid: string, userId: string, isAdmin = false): void {
+  if (!UUID_RE.test(userId)) return;
+  dbRun("session.create", async (db) => {
+    await db
+      .insert(userSessionsTable)
+      .values({
+        id: sid,
+        userId,
+        isAdmin,
+        expiresAt: new Date(Date.now() + SESSION_TTL_MS),
+      })
+      .onConflictDoNothing();
+  });
+}
+
+/** Remove session from DB on logout */
+function deleteSession(sid: string): void {
+  dbRun("session.delete", async (db) => {
+    await db.delete(userSessionsTable).where(eq(userSessionsTable.id, sid));
+  });
+}
 
 const router: IRouter = Router();
 
@@ -119,6 +149,7 @@ router.post("/auth/login", (req, res) => {
   if (stored.role === "admin") {
     const sid = newSessionId();
     sessions.set(sid, stored.user.id);
+    persistSession(sid, stored.user.id, true);
     setSessionCookie(res, sid);
     logActivity({
       actorId: stored.user.id,
@@ -166,7 +197,7 @@ router.post("/auth/verify-otp", (req, res) => {
     if (usersByEmail.has(email)) {
       return res.status(409).json({ error: "An account with that email already exists." });
     }
-    const id = newId("u");
+    const id = randomUUID();
     const referralCode = newReferralCode();
     let referredBy: string | null = null;
     if (payload.referralCode) {
@@ -204,6 +235,28 @@ router.post("/auth/verify-otp", (req, res) => {
     referrals.set(id, []);
     userData.set(id, freshUserData(id, { country: payload.country }));
 
+    // Persist new user to DB
+    dbRun("auth.signup.user", async (db) => {
+      await db
+        .insert(usersTable)
+        .values({
+          id,
+          username: stored.user.username,
+          email: stored.user.email,
+          fullName: stored.user.fullName,
+          country: stored.user.country,
+          passwordHash: stored.passwordHash,
+          role: stored.role,
+          referralCode,
+          referredBy: referredBy ?? undefined,
+          kycVerified: false,
+          emailVerified: false,
+          phoneVerified: false,
+          avatarUrl: stored.user.avatarUrl ?? undefined,
+        })
+        .onConflictDoNothing();
+    });
+
     if (referredBy) {
       const list = referrals.get(referredBy) ?? [];
       list.push({
@@ -219,6 +272,7 @@ router.post("/auth/verify-otp", (req, res) => {
 
     const sid = newSessionId();
     sessions.set(sid, id);
+    persistSession(sid, id);
     setSessionCookie(res, sid);
     logActivity({
       actorId: id,
@@ -250,6 +304,7 @@ router.post("/auth/verify-otp", (req, res) => {
   }
   const sid = newSessionId();
   sessions.set(sid, stored.user.id);
+  persistSession(sid, stored.user.id);
   setSessionCookie(res, sid);
   logActivity({
     actorId: stored.user.id,
@@ -299,7 +354,10 @@ router.post("/auth/logout", (req, res) => {
   const sid = (req.signedCookies?.[SESSION_COOKIE] ?? req.cookies?.[SESSION_COOKIE]) as
     | string
     | undefined;
-  if (sid) sessions.delete(sid);
+  if (sid) {
+    sessions.delete(sid);
+    deleteSession(sid);
+  }
   clearSessionCookie(res);
   res.json({ success: true });
 });

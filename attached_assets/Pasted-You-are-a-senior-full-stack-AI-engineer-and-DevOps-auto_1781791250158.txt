@@ -1,0 +1,238 @@
+You are a senior full-stack AI engineer and DevOps automation agent. Your task is to fully audit, fix, optimize, and prepare this entire hybrid fintech forex web application for real-world production deployment across multiple platforms.
+
+🎯 PRIMARY OBJECTIVE
+
+Transform this project into a fully functional, secure, real-time, production-ready hybrid fintech forex platform that works flawlessly:
+
+* Inside Replit
+* After push to GitHub
+* When deployed via GitHub to:
+    * Render
+    * Railway
+    * VPS (Linux/Node.js)
+    * Node.js + Vite environments
+
+There must be:
+
+* ZERO build errors
+* ZERO runtime errors
+* ZERO deployment failures
+* ZERO critical warnings or risks
+
+⸻
+
+🛠️ CORE FIXES & CODEBASE STABILIZATION
+
+1. Fix package.json and workspace issues
+    * Correct invalid JSON formatting
+    * Ensure valid "exports" field
+    * Align pnpm version across workspace
+    * Regenerate lockfile properly
+    * Ensure compatibility with CI/CD using:
+        * pnpm install --no-frozen-lockfile
+        * Then commit updated lockfile
+2. Fix monorepo/workspace structure
+    * Ensure proper root package.json
+    * Validate all sub-packages
+    * Remove duplicate or conflicting configs
+    * Ensure build works from root
+3. Dependency & Security Audit
+    * Remove broken or unused dependencies
+    * Fix vulnerabilities
+    * Ensure all packages are production-safe
+
+⸻
+
+🔐 ENVIRONMENT & SECRETS MANAGEMENT
+
+During build, you MUST:
+
+* Prompt for and validate the following environment variables
+* Automatically create and populate .env safely
+
+Required variables:
+
+SESSION_SECRET=
+SENDGRID_API_KEY=
+ADMIN_EMAIL=
+AI_INTEGRATIONS_OPENAI_BASE_URL=
+AI_INTEGRATIONS_OPENAI_API_KEY=
+ALCHEMY_API_KEY=
+ADMIN_NOTIFY_EMAIL=
+DATABASE_URL=
+JWT_SECRET=
+ALLOWED_ORIGINS=
+APP_NAME=
+LOG_LEVEL=
+
+Rules:
+
+* If variables already exist → validate and update if outdated
+* If missing → prompt user to input securely
+* Ensure compatibility across:
+    * Replit
+    * GitHub Actions
+    * Render
+    * Railway
+    * VPS deployments
+
+⸻
+
+🗄️ DATABASE (CRITICAL FIX)
+
+Current issue: In-memory storage resets on restart ❌
+
+You MUST:
+
+* Replace in-memory storage with persistent DB using:
+    * PostgreSQL (preferred: Neon, Supabase, or Replit DB)
+* Fully integrate existing Drizzle schema
+* Ensure:
+    * Migrations work
+    * Data persists across deployments
+    * Connection uses DATABASE_URL
+
+⸻
+
+📧 EMAIL & OTP SYSTEM
+
+Current issue: OTP logs to console ❌
+
+You MUST:
+
+* Integrate real email sending via:
+    * SendGrid API OR SMTP fallback
+* Secure OTP system:
+    * Expiry
+    * Rate limiting
+    * No console exposure in production
+
+⸻
+
+💬 REAL-TIME CHAT SYSTEM (IMPORTANT FEATURE)
+
+Implement a bidirectional real-time chat system:
+
+Requirements:
+
+* Admin ↔ Users communication
+* Either party can initiate conversation
+* Admin can:
+    * Start chats from dashboard
+    * Reply in real-time
+* Users can:
+    * Start chat anytime
+* Use:
+    * WebSockets (preferred) or polling fallback
+
+⸻
+
+🧑‍💼 ADMIN PANEL VALIDATION
+
+Ensure admin panel is fully functional:
+
+* Admin can:
+    * View users
+    * Modify user data
+    * Manage accounts
+    * Trigger actions
+* Fix any broken logic
+* Ensure all actions persist in DB
+
+⸻
+
+⚡ REAL-TIME & PRODUCTION LOGIC
+
+Convert ALL fake/mock/UI-only features into real working logic:
+
+* Forex/trading logic (if simulated → make consistent backend-driven)
+* Wallet/account updates
+* Notifications
+* API integrations
+
+⸻
+
+🚀 DEPLOYMENT READINESS
+
+Ensure project works seamlessly when:
+
+1. Pushed to GitHub
+
+* Clean repo structure
+* No unnecessary files
+* Proper .gitignore
+
+2. CI/CD Compatible
+
+* Works in GitHub Actions
+* No environment conflicts
+
+3. Deployable to:
+
+* Render
+* Railway
+* VPS (Node.js)
+* Vite builds
+
+⸻
+
+🧪 FULL SYSTEM TESTING
+
+You MUST:
+
+* Run full build
+* Start server
+* Test:
+    * Auth system
+    * Admin panel
+    * Chat system
+    * Database persistence
+    * API integrations
+
+Fix ALL:
+
+* Bugs
+* Crashes
+* Edge cases
+
+⸻
+
+⚠️ RISK ELIMINATION (MANDATORY)
+
+Eliminate ALL risks including:
+
+* In-memory persistence ❌
+* Missing env variables ❌
+* Broken dependencies ❌
+* Console-exposed secrets ❌
+* Deployment inconsistencies ❌
+
+Final system must have:
+✅ Zero warnings
+✅ Zero risks
+✅ Zero unstable features
+
+⸻
+
+📦 FINAL OUTPUT REQUIREMENTS
+
+Deliver a project that is:
+
+* Fully production-ready
+* Well-structured and documented
+* Deployable anywhere without modification
+* Stable and secure
+
+⸻
+
+🧠 FINAL INSTRUCTION
+
+Do NOT stop until:
+
+* The entire application is verified working
+* All features are real and functional
+* Deployment succeeds without error across platforms
+
+This is a real fintech production system, not a prototype.
+
+Ensure everything works accordingly.

@@ -1,5 +1,5 @@
 - [JWT auth pattern](jwt-auth.md) — JWT is additive on top of cookie sessions; cookie auth takes precedence in attachSession; never replace session auth with JWT.
-- [DB shadow-writes](db-shadow-writes.md) — DB writes are fire-and-forget via dbRun(); in-memory store stays source of truth; in-memory IDs aren't UUIDs so don't pass id field to Drizzle inserts.
+- [DB shadow-writes](db-shadow-writes.md) — dbRun() fire-and-forget persistence; in-memory stays source of truth; UUID_RE guard before every insert; pg must be direct dep + external in build.mjs; startup hydration in hydrate.ts.
 - [Rate limiter IPv6 fix](rate-limiter-ipv6.md) — express-rate-limit v8 needs validate: { keyGeneratorIpFallback: false } to suppress IPv6 warning on custom keyGenerators; keyGenerator: false is not a valid key.
 - [Deployment layout](deployment-layout.md) — artifacts/ source is committed (not gitignored); dist/ is gitignored; build = pnpm install + pnpm --filter @workspace/api-server build; pre-built binary was in ZIP only.
 - [CORS multi-platform](cors-multi-platform.md) — app.ts reads ALLOWED_ORIGINS (full URLs) and REPLIT_DOMAINS (hostnames) for allowed origins; set ALLOWED_ORIGINS on Render/Railway/VPS.
