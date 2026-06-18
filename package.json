@@ -1,21 +1,16 @@
 {
-  "name": "nextrade",
+  "name": "workspace",
   "version": "0.0.0",
-  "private": true,
+  "license": "MIT",
   "scripts": {
-    "dev": "pnpm --filter @workspace/api-server dev",
-    "dev:all": "concurrently \"pnpm --filter @workspace/api-server dev\" \"pnpm --filter @workspace/nextrade dev\" \"pnpm --filter @workspace/admin-portal dev\"",
-    "build": "node build.cjs && pnpm --filter @workspace/api-server build",
-    "build:all": "pnpm --filter @workspace/api-server build && pnpm --filter @workspace/nextrade build && pnpm --filter @workspace/admin-portal build",
-    "start": "node artifacts/api-server/dist/index.mjs",
-    "start:sh": "bash start.sh",
-    "typecheck": "pnpm -r typecheck"
+    "preinstall": "sh -c 'rm -f package-lock.json yarn.lock; case \"$npm_config_user_agent\" in pnpm/*) ;; *) echo \"Use pnpm instead\" >&2; exit 1 ;; esac'",
+    "build": "pnpm run typecheck && pnpm -r --if-present run build",
+    "typecheck:libs": "tsc --build",
+    "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck"
   },
-  "engines": {
-    "node": ">=20",
-    "pnpm": ">=9"
-  },
+  "private": true,
   "devDependencies": {
-    "typescript": "5.5.4"
+    "typescript": "~5.9.2",
+    "prettier": "^3.8.1"
   }
 }

@@ -820,10 +820,7 @@ export function createUser(opts: {
   merchant?: boolean;
   phone?: string | null;
 }): StoredUser {
-  // Use a UUID for all new user IDs (non-seeded callers don't pass opts.id).
-  // This keeps IDs valid as Postgres UUID primary keys so DB persistence works.
-  // Seeded/demo users that pass opts.id explicitly keep their legacy IDs.
-  const id = opts.id ?? randomUUID();
+  const id = opts.id ?? newId("u");
   const referralCode = newReferralCode();
   const stored: StoredUser = {
     user: {
@@ -857,48 +854,6 @@ export function createUser(opts: {
   usersByEmail.set(opts.email.toLowerCase(), id);
   referralCodeIndex.set(referralCode, id);
   referrals.set(id, []);
-
-  // Persist to DB when the ID is a valid UUID (skip legacy seeded IDs like u_demo_001)
-  const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  if (UUID_RE.test(id)) {
-    import("./db-client").then(({ dbRun }) => {
-      import("@workspace/db/schema").then(({ usersTable }) => {
-        dbRun("store.createUser", async (db) => {
-          const { eq } = await import("drizzle-orm");
-          // Upsert: update if user already exists (e.g. admin re-seeded)
-          await db
-            .insert(usersTable)
-            .values({
-              id,
-              username: stored.user.username,
-              email: stored.user.email,
-              fullName: stored.user.fullName,
-              country: stored.user.country,
-              passwordHash: stored.passwordHash,
-              phone: stored.phone ?? undefined,
-              role: stored.role,
-              kycVerified: stored.user.kycVerified,
-              avatarUrl: stored.user.avatarUrl ?? undefined,
-              referralCode,
-              referredBy: stored.referredBy ?? undefined,
-              tradingLocked: stored.tradingLocked,
-              demoMode: stored.demoMode,
-              merchant: opts.merchant ?? false,
-            })
-            .onConflictDoUpdate({
-              target: usersTable.email,
-              set: {
-                fullName: stored.user.fullName,
-                passwordHash: stored.passwordHash,
-                role: stored.role,
-              },
-            });
-          void eq; // imported for future use in upsert chains
-        });
-      });
-    });
-  }
-
   return stored;
 }
 

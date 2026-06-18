@@ -34,7 +34,6 @@ import coinbaseRouter from "./coinbase";
 import notificationsRouter from "./notifications";
 import adminNotificationsRouter from "./admin-notifications";
 import withdrawalGasFeeRouter from "./withdrawal-gas-fee";
-import adminDepositsRouter from "./admin-deposits";
 
 const router: IRouter = Router();
 
@@ -70,6 +69,5 @@ router.use(coinbaseRouter);
 router.use(notificationsRouter);
 router.use(adminNotificationsRouter);
 router.use(withdrawalGasFeeRouter);
-router.use(adminDepositsRouter);
 
 export default router;

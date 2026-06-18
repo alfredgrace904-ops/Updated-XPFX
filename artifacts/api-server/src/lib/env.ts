@@ -70,25 +70,11 @@ export const env = {
   // SendGrid (optional — email.ts falls back to SMTP, then to logged-only)
   SENDGRID_API_KEY: get("SENDGRID_API_KEY"),
 
-  // Database (optional — falls back to in-memory only when missing)
-  DATABASE_URL: get("DATABASE_URL"),
-
-  // JWT signing secret (optional — only needed if JWT auth layer is used)
-  JWT_SECRET: get("JWT_SECRET"),
-
-  // Application name used in emails and UI (defaults to platform name)
-  APP_NAME: get("APP_NAME") ?? "XpressPro FX",
-
   // Platform on-chain receiving address override
   PLATFORM_RECEIVING_ADDRESS: get("PLATFORM_RECEIVING_ADDRESS"),
 
   // Replit platform — comma-separated list of public hostnames for this deployment
   REPLIT_DOMAINS: get("REPLIT_DOMAINS"),
-
-  // Generic allowed CORS origins for non-Replit deployments (Render, Railway, VPS, etc.)
-  // Comma-separated list of full origin URLs, e.g. "https://example.com,https://www.example.com"
-  // Takes precedence over REPLIT_DOMAINS when both are set.
-  ALLOWED_ORIGINS: get("ALLOWED_ORIGINS"),
 } as const;
 
 export const isProduction = env.NODE_ENV === "production";

@@ -17,11 +17,9 @@ export const walletsTable = pgTable("wallets", {
 });
 
 export const transactionTypeEnum = pgEnum("transaction_type", [
-    "deposit", "withdrawal", "trade_profit", "p2p_buy", "p2p_sell", "transfer", "gas_fee", "maintenance_fee", "fee"
+    "deposit", "withdrawal", "trade_profit", "p2p_buy", "p2p_sell", "transfer", "gas_fee", "maintenance_fee"
 ]);
-export const transactionStatusEnum = pgEnum("transaction_status", [
-  "pending", "completed", "failed", "approved", "rejected"
-]);
+export const transactionStatusEnum = pgEnum("transaction_status", ["pending", "completed", "failed"]);
 
 export const transactionsTable = pgTable("transactions", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -32,10 +30,6 @@ export const transactionsTable = pgTable("transactions", {
   currency: text("currency").notNull().default("USD"),
   status: transactionStatusEnum("status").notNull().default("completed"),
   description: text("description").notNull().default(""),
-  /** Unique external reference (e.g. payment-provider ID or admin-generated ref). */
-  reference: text("reference").unique(),
-  /** Arbitrary JSON payload: bank details, MoonPay data, admin notes, etc. */
-  metadata: jsonb("metadata"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 

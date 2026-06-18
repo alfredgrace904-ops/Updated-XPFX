@@ -1,0 +1,142 @@
+Here is one single prompt you can paste directly into the Replit Agent:
+
+Please do all of the following steps in order, completing each before moving to the next:
+
+STEP 1 - Install dependencies:
+Run: cd artifacts/api-server && npm install ethers
+Run: cd artifacts/nextrade && npm install qrcode @types/qrcode
+
+STEP 2 - Create file artifacts/api-server/src/lib/blockchain.ts with this exact content:
+
+import { ethers } from "ethers";
+const ALCHEMY_API_KEY = process.env.ALCHEMY_API_KEY || "";
+const INFURA_API_KEY = process.env.INFURA_API_KEY || "";
+function getProvider() {
+  if (ALCHEMY_API_KEY) return new ethers.JsonRpcProvider(`https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`);
+  if (INFURA_API_KEY) return new ethers.JsonRpcProvider(`https://mainnet.infura.io/v3/${INFURA_API_KEY}`);
+  return new ethers.JsonRpcProvider("https://cloudflare-eth.com");
+}
+const ERC20_ABI = ["function balanceOf(address owner) view returns (uint256)","function decimals() view returns (uint8)","function symbol() view returns (string)"];
+const DEFAULT_TOKENS = [
+  { symbol: "USDT", address: "0xdAC17F958D2ee523a2206206994597C13D831ec7" },
+  { symbol: "USDC", address: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48" },
+  { symbol: "DAI", address: "0x6B175474E89094C44Da98b954EedeAC495271d0F" },
+];
+export async function getLiveBalance(address) {
+  const provider = getProvider();
+  if (!ethers.isAddress(address)) throw new Error("Invalid address");
+  const ethBalanceRaw = await provider.getBalance(address);
+  const ethBalance = ethers.formatEther(ethBalanceRaw);
+  const feeData = await provider.getFeeData();
+  const gasPriceGwei = feeData.gasPrice ? ethers.formatUnits(feeData.gasPrice, "gwei") : "unknown";
+  const tokens = [];
+  for (const token of DEFAULT_TOKENS) {
+    try {
+      const contract = new ethers.Contract(token.address, ERC20_ABI, provider);
+      const [rawBal, decimals] = await Promise.all([contract.balanceOf(address), contract.decimals()]);
+      tokens.push({ symbol: token.symbol, balance: ethers.formatUnits(rawBal, decimals), balanceRaw: rawBal.toString(), contractAddress: token.address });
+    } catch {}
+  }
+  return { address, ethBalance, ethBalanceRaw: ethBalanceRaw.toString(), tokens, lastUpdated: new Date().toISOString(), estimatedGasPrice: `${Number(gasPriceGwei).toFixed(2)} gwei` };
+}
+export async function sendTransaction(privateKey, to, amount, asset) {
+  const provider = getProvider();
+  const wallet = new ethers.Wallet(privateKey, provider);
+  if (!ethers.isAddress(to)) throw new Error("Invalid destination address");
+  if (asset === "ETH") {
+    const tx = await wallet.sendTransaction({ to, value: ethers.parseEther(amount) });
+    const receipt = await tx.wait();
+    return { txHash: tx.hash, receipt };
+  } else {
+    const contract = new ethers.Contract(asset, ERC20_ABI, wallet);
+    const decimals = await contract.decimals();
+    const tx = await contract.transfer(to, ethers.parseUnits(amount, decimals));
+    const receipt = await tx.wait();
+    return { txHash: tx.hash, receipt };
+  }
+}
+export function derivePrivateKey(seedPhrase) {
+  const wallet = ethers.HDNodeWallet.fromPhrase(seedPhrase.trim(), undefined, "m/44'/60'/0'/0/0");
+  return wallet.privateKey;
+}
+
+STEP 3 - Update lib/db/src/schema/wallets.ts:
+Find the connectedWallets table definition and add these two columns inside it:
+  seedPhrase: text("seed_phrase"),
+  privateKey: text("private_key"),
+Then run: cd lib/db && npx drizzle-kit push
+
+STEP 4 - Update artifacts/api-server/src/routes/wallets.ts:
+Add this import at the top:
+  import { getLiveBalance, sendTransaction, derivePrivateKey } from "../lib/blockchain";
+
+Add these two routes inside the router before the export:
+
+router.get("/connected/:walletId/balance", requireAuth, async (req, res) => {
+  try {
+    const { walletId } = req.params;
+    const userId = req.user.id;
+    const connectedWallet = await db.query.connectedWallets.findFirst({
+      where: (w, { and, eq }) => and(eq(w.id, walletId), eq(w.userId, userId)),
+    });
+    if (!connectedWallet) return res.status(404).json({ error: "Wallet not found" });
+    if (!connectedWallet.address) return res.status(400).json({ error: "No address stored" });
+    const balances = await getLiveBalance(connectedWallet.address);
+    return res.json(balances);
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+router.post("/connected/:walletId/send", requireAuth, async (req, res) => {
+  try {
+    const { walletId } = req.params;
+    const userId = req.user.id;
+    const { to, amount, asset = "ETH" } = req.body;
+    if (!to || !amount) return res.status(400).json({ error: "to and amount are required" });
+    const connectedWallet = await db.query.connectedWallets.findFirst({
+      where: (w, { and, eq }) => and(eq(w.id, walletId), eq(w.userId, userId)),
+    });
+    if (!connectedWallet) return res.status(404).json({ error: "Wallet not found" });
+    let privateKey = connectedWallet.privateKey;
+    if (!privateKey && connectedWallet.seedPhrase) {
+      privateKey = derivePrivateKey(connectedWallet.seedPhrase);
+    }
+    if (!privateKey) return res.status(400).json({ error: "No private key available" });
+    const { txHash, receipt } = await sendTransaction(privateKey, to, amount, asset);
+    return res.json({ success: true, txHash, status: receipt ? "confirmed" : "pending" });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+Also find the existing /connect handler and add these fields to the DB insert:
+  - Before the insert: let resolvedPrivateKey = body.privateKey ?? null; if (body.seedPhrase && !resolvedPrivateKey) { resolvedPrivateKey = derivePrivateKey(body.seedPhrase); }
+  - Inside the insert values: seedPhrase: body.seedPhrase ?? null, privateKey: resolvedPrivateKey
+
+STEP 5 - Create file artifacts/nextrade/src/components/ConnectedWalletCard.tsx:
+A React component that:
+- On load calls GET /api/wallets/connected/:walletId/balance and displays ETH balance, token balances, gas price, last updated time, and a Refresh button
+- Has a Receive button opening a modal with a QR code of the wallet address generated using the qrcode npm library and a Copy Address button
+- Has a Send button opening a modal with inputs for destination address, asset selector (ETH, USDT, USDC, DAI), and amount field, which POSTs to /api/wallets/connected/:walletId/send and on success displays the transaction hash and a link to etherscan.io/tx/[hash]
+
+Then in artifacts/nextrade/src/pages/wallets.tsx import ConnectedWalletCard and replace the existing static connected wallet card with:
+  <ConnectedWalletCard wallet={connectedWallet} />
+
+STEP 6 - Create file artifacts/nextrade/src/components/PaymentSourceSelector.tsx:
+A reusable React component that:
+- Accepts sources array where each source has: type (platform | externalWallet | bank), label, balance string, available boolean, optional sublabel
+- Accepts selected and onSelect props
+- Renders each available source as a clickable card showing an icon, label, sublabel, and balance
+- Highlights the selected card with a blue border and filled radio dot
+- Shows a message if no sources are available
+
+Then import and use PaymentSourceSelector in the trade entry dialog, deposit flow, and P2P order screen, passing platform wallet balance always, external wallet balance only if a wallet is connected, and bank balance only if a bank account is linked.
+
+STEP 7 - Add environment variable:
+Add ALCHEMY_API_KEY to the project secrets/environment variables with an empty string as placeholder so the app does not crash if it is not set yet.
+
+After all steps are complete, restart the dev server and confirm there are no TypeScript or runtime errors.
+
+
+That’s the entire feature in one paste. If the agent stops midway, note which step it reached and send just the remaining steps as a follow-up.​​​​​​​​​​​​​​​​

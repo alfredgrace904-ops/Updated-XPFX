@@ -1,0 +1,170 @@
+Please implement feature #13 - P2P Merchant Application System and Vendor Chat. Do all steps in order. Do not replace any existing working code unless explicitly required. Keep all existing functionality intact.
+
+STEP 1 - Add merchant application data model:
+Open lib/db/src/schema/p2p.ts and add a new table p2p_merchant_applications with these fields:
+  id: uuid primary key defaultRandom
+  userId: uuid not null (FK to users)
+  legalName: text not null
+  email: text not null
+  country: text not null
+  paymentMethod: text not null (values: etransfer_email or bank_account)
+  etransferEmail: text nullable
+  bankReceivingDetails: jsonb nullable
+  description: text not null
+  status: text not null default "pending" (values: pending, approved, rejected)
+  rejectionReason: text nullable
+  approvedAt: timestamp nullable
+  createdAt: timestamp defaultNow
+
+Also add p2p_notifications table if not already present with fields:
+  id: uuid primary key defaultRandom
+  userId: uuid not null
+  type: text not null (values: p2p_deposit)
+  asset: text not null
+  amount: text not null
+  reference: text not null
+  instructions: text nullable
+  isRead: boolean default false
+  createdAt: timestamp defaultNow
+
+Then run: cd lib/db && npx drizzle-kit push
+
+STEP 2 - Add merchant application API routes:
+In artifacts/api-server/src/routes/p2p.ts add these routes:
+
+POST /p2p/merchant/apply
+- Protected with requireAuth
+- Accepts: legalName, email, country, paymentMethod, etransferEmail, bankReceivingDetails, description
+- Validates with Zod: all fields required except etransferEmail and bankReceivingDetails which depend on paymentMethod
+- Checks if user already has a pending or approved application and returns 400 if so
+- Inserts new application record with status pending
+- Returns the created application
+
+GET /p2p/merchant/status
+- Protected with requireAuth
+- Returns the user's most recent merchant application including status, rejectionReason, and approvedAt
+- Returns null if no application exists
+
+Also update the GET /auth/session response to include merchantStatus field (pending, approved, rejected, or null) based on the user's application status, and isMerchant boolean from the user record.
+
+STEP 3 - Add admin merchant management routes:
+In the admin routes file add these routes all protected with admin auth middleware:
+
+GET /admin/p2p/merchants
+- Accepts optional query param status (pending, approved, rejected)
+- Returns list of all merchant applications with user details joined
+
+PATCH /admin/p2p/merchants/:userId/decision
+- Accepts: action (approve or reject), note (optional), rejectionReason (required if action is reject)
+- If action is approve: set application status to approved, set approvedAt to now, set isMerchant true on the user record, store optional welcome note
+- If action is reject: set application status to rejected, store rejectionReason on the application
+- Returns updated application
+
+DELETE /admin/p2p/merchants/:userId
+- Revokes merchant status: set isMerchant false on user record, set application status back to rejected with rejectionReason "Merchant status revoked by admin"
+- Returns success message
+
+Add Zod schemas for all request bodies and regenerate client hooks after.
+
+STEP 4 - Add P2P deposit notification routes:
+In the admin routes file add:
+
+POST /admin/p2p/merchants/:userId/notify
+- Protected with admin auth
+- Accepts: asset, amount, reference, instructions (optional)
+- Inserts a p2p_deposit notification into p2p_notifications for that userId
+- Returns the created notification
+
+In artifacts/api-server/src/routes/p2p.ts add or update:
+
+GET /p2p/notifications
+- Protected with requireAuth
+- Returns all p2p_notifications for the authenticated user ordered by createdAt desc
+- Includes unreadCount in the response
+
+PATCH /p2p/notifications/:notificationId/read
+- Protected with requireAuth
+- Marks a notification as read
+- Returns updated notification
+
+STEP 5 - Add P2P admin chat routes:
+Extend the existing messages system with context type p2p_admin.
+
+In the admin routes file add:
+POST /admin/p2p/merchants/:userId/chat
+- Protected with admin auth
+- Accepts: message (text)
+- Inserts a message with context p2p_admin, fromAdmin true, toUserId set to the merchant userId
+- Returns the created message
+
+In artifacts/api-server/src/routes/p2p.ts add:
+GET /p2p/admin-chat
+- Protected with requireAuth
+- Returns all messages with context p2p_admin for the authenticated user ordered by createdAt asc
+
+POST /p2p/admin-chat/reply
+- Protected with requireAuth
+- Accepts: message (text)
+- Inserts a message with context p2p_admin, fromAdmin false, fromUserId set to authenticated user
+- Returns the created message
+
+Add Zod schemas for all of the above and regenerate client hooks.
+
+STEP 6 - Gate P2P listing creation behind merchant status:
+Open artifacts/api-server/src/routes/p2p.ts and find POST /p2p/listings.
+Add a check at the top of the handler:
+  if (!req.user.isMerchant) {
+    return res.status(403).json({ error: "Only approved P2P merchants can create listings. Apply to become a merchant on the P2P page." });
+  }
+Do not change any other part of the listings route.
+
+STEP 7 - Build merchant application UI on P2P page:
+Open artifacts/nextrade/src/pages/p2p.tsx and make these changes:
+- If the user is not a merchant and has no pending application, show a "Become a P2P Merchant" card with a button that opens an application form dialog
+- The application form dialog has fields: Full Legal Name, Email, Country, Payment Method (dropdown: E-Transfer or Bank Account), E-Transfer Email (shown if E-Transfer selected), Bank Receiving Details (textarea shown if Bank Account selected), Trading Intent Description
+- On submit call POST /p2p/merchant/apply and show success message "Application submitted. You will be notified of the decision."
+- If the user has a pending application show a yellow "Application Under Review" badge instead of the Create Listing button
+- If the user has a rejected application show a red rejection notice with the rejectionReason and a "Reapply" button that opens the form again
+- If the user is an approved merchant show a green "Merchant" badge next to their name and show the Create Listing button as normal
+Do not remove or break any existing P2P listing or order functionality.
+
+STEP 8 - Wire P2P buy flow to MoonPay for non-merchant users:
+In artifacts/nextrade/src/pages/p2p.tsx find the Buy button on P2P listings.
+For non-merchant regular users, instead of opening the internal P2P order flow, open the MoonPay Buy Crypto dialog pre-filled with the listing asset and fiat amount.
+For merchant users keep the existing buy flow unchanged.
+
+STEP 9 - Build P2P notifications display for merchants:
+In artifacts/nextrade/src/pages/p2p.tsx for approved merchants add a Notifications section that:
+- Calls GET /p2p/notifications on load and polls every 30 seconds
+- Renders each p2p_deposit notification as a card showing: asset, amount, reference code, instructions if present, and timestamp
+- Shows a red unread badge with the unread count on the P2P nav tab in the main navigation when unreadCount is greater than zero
+- Marks notifications as read when the user clicks on them
+
+STEP 10 - Build P2P admin-vendor chat on website frontend:
+In artifacts/nextrade/src/pages/p2p.tsx for approved merchants add a "P2P Support Chat" panel that:
+- Calls GET /p2p/admin-chat on load and polls every 10 seconds
+- Renders each message in a chat bubble style: admin messages on the left, merchant replies on the right
+- Has a text input and Send button at the bottom that calls POST /p2p/admin-chat/reply
+- Only shows this panel when the merchant has at least one active listing or active order
+
+STEP 11 - Build P2P Merchants admin page:
+Create a new file artifacts/admin-portal/src/pages/p2p-merchants.tsx with:
+- Three tabs: Pending, Approved, Rejected
+- Each tab shows a table of applications with columns: Name, Email, E-Transfer Email, Bank Details, Country, Submitted Date, Actions
+- Pending tab: each row has Approve button (opens modal with optional welcome note input) and Reject button (opens modal requiring rejection reason text input)
+- Approved tab: each row has Revoke button, Notify Deposit button (opens form with asset, amount, reference, instructions fields that calls POST /admin/p2p/merchants/:userId/notify), and Chat button (opens inline chat panel showing the p2p_admin thread with a message input)
+- Rejected tab: shows rejection reason and date
+- The inline chat panel calls GET /admin/p2p/merchants/:userId/chat equivalent and POST /admin/p2p/merchants/:userId/chat, polling every 10 seconds when open
+
+Then register the new page in artifacts/admin-portal/src/App.tsx router and add a "P2P Merchants" link to artifacts/admin-portal/src/components/sidebar.tsx.
+
+STEP 12 - Add environment variables:
+Add these to project secrets if not already present with empty string placeholders:
+  MOONPAY_API_KEY (may already exist from task 12)
+  MOONPAY_WEBHOOK_SECRET (may already exist from task 12)
+
+STEP 13 - Final verification:
+Run TypeScript check across all packages and fix any type errors before finishing.
+Restart all dev servers and confirm all workflows are running with no crashes.
+Do not leave any TODO comments or placeholder functions - all code must be fully implemented.
+Show a complete summary of every file created or modified.

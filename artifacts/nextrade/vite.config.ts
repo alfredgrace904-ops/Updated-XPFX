@@ -4,16 +4,27 @@ import tailwindcss from "@tailwindcss/vite";
 import path from "path";
 import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
 
-// Port: prefer NEXTRADE_PORT, fall back to PORT if it's not the API server port,
-// otherwise use 5000 (the Replit webview port for the frontend preview).
-const rawPort =
-  process.env.NEXTRADE_PORT ??
-  (process.env.PORT && process.env.PORT !== "8080" ? process.env.PORT : undefined) ??
-  "5000";
+const rawPort = process.env.PORT;
+
+if (!rawPort) {
+  throw new Error(
+    "PORT environment variable is required but was not provided.",
+  );
+}
+
 const port = Number(rawPort);
 
-// Base path for asset resolution — defaults to "/" for the main app.
-const basePath = process.env.BASE_PATH ?? "/";
+if (Number.isNaN(port) || port <= 0) {
+  throw new Error(`Invalid PORT value: "${rawPort}"`);
+}
+
+const basePath = process.env.BASE_PATH;
+
+if (!basePath) {
+  throw new Error(
+    "BASE_PATH environment variable is required but was not provided.",
+  );
+}
 
 export default defineConfig({
   base: basePath,
@@ -54,12 +65,6 @@ export default defineConfig({
     allowedHosts: true,
     fs: {
       strict: true,
-    },
-    proxy: {
-      "/api": {
-        target: "http://localhost:8080",
-        changeOrigin: true,
-      },
     },
   },
   preview: {

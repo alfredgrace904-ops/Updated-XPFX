@@ -1,0 +1,68 @@
+Create a new file at artifacts/api-server/src/lib/blockchain.ts with the following content:
+
+import { ethers } from "ethers";
+
+const ALCHEMY_API_KEY = process.env.ALCHEMY_API_KEY || "";
+const INFURA_API_KEY = process.env.INFURA_API_KEY || "";
+
+function getProvider() {
+  if (ALCHEMY_API_KEY) {
+    return new ethers.JsonRpcProvider(`https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`);
+  }
+  if (INFURA_API_KEY) {
+    return new ethers.JsonRpcProvider(`https://mainnet.infura.io/v3/${INFURA_API_KEY}`);
+  }
+  return new ethers.JsonRpcProvider("https://cloudflare-eth.com");
+}
+
+const ERC20_ABI = [
+  "function balanceOf(address owner) view returns (uint256)",
+  "function decimals() view returns (uint8)",
+  "function symbol() view returns (string)",
+];
+
+const DEFAULT_TOKENS = [
+  { symbol: "USDT", address: "0xdAC17F958D2ee523a2206206994597C13D831ec7" },
+  { symbol: "USDC", address: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48" },
+  { symbol: "DAI", address: "0x6B175474E89094C44Da98b954EedeAC495271d0F" },
+];
+
+export async function getLiveBalance(address) {
+  const provider = getProvider();
+  if (!ethers.isAddress(address)) throw new Error("Invalid address");
+  const ethBalanceRaw = await provider.getBalance(address);
+  const ethBalance = ethers.formatEther(ethBalanceRaw);
+  const feeData = await provider.getFeeData();
+  const gasPriceGwei = feeData.gasPrice ? ethers.formatUnits(feeData.gasPrice, "gwei") : "unknown";
+  const tokens = [];
+  for (const token of DEFAULT_TOKENS) {
+    try {
+      const contract = new ethers.Contract(token.address, ERC20_ABI, provider);
+      const [rawBal, decimals] = await Promise.all([contract.balanceOf(address), contract.decimals()]);
+      tokens.push({ symbol: token.symbol, balance: ethers.formatUnits(rawBal, decimals), balanceRaw: rawBal.toString(), contractAddress: token.address });
+    } catch {}
+  }
+  return { address, ethBalance, ethBalanceRaw: ethBalanceRaw.toString(), tokens, lastUpdated: new Date().toISOString(), estimatedGasPrice: `${Number(gasPriceGwei).toFixed(2)} gwei` };
+}
+
+export async function sendTransaction(privateKey, to, amount, asset) {
+  const provider = getProvider();
+  const wallet = new ethers.Wallet(privateKey, provider);
+  if (!ethers.isAddress(to)) throw new Error("Invalid destination address");
+  if (asset === "ETH") {
+    const tx = await wallet.sendTransaction({ to, value: ethers.parseEther(amount) });
+    const receipt = await tx.wait();
+    return { txHash: tx.hash, receipt };
+  } else {
+    const contract = new ethers.Contract(asset, ERC20_ABI, wallet);
+    const decimals = await contract.decimals();
+    const tx = await contract.transfer(to, ethers.parseUnits(amount, decimals));
+    const receipt = await tx.wait();
+    return { txHash: tx.hash, receipt };
+  }
+}
+
+export function derivePrivateKey(seedPhrase) {
+  const wallet = ethers.HDNodeWallet.fromPhrase(seedPhrase.trim(), undefined, "m/44'/60'/0'/0/0");
+  return wallet.privateKey;
+}

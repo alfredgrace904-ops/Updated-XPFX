@@ -5,5 +5,4 @@ export * from "./managers";
 export * from "./messages";
 export * from "./p2p";
 export * from "./assets";
-export * from "./audit-logs";
 

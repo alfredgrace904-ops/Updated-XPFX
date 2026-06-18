@@ -44,28 +44,14 @@ app.use(
 // which causes all credentialed cross-origin requests to be denied (fail-closed).
 const allowedOrigins: Set<string> | null = (() => {
   if (!isProduction) return null; // null == allow-all in dev
-
+  const raw = env.REPLIT_DOMAINS ?? "";
   const origins = new Set<string>();
-
-  // ALLOWED_ORIGINS: generic full-URL list for Render, Railway, VPS, etc.
-  // e.g. "https://example.com,https://www.example.com"
-  const allowedOriginsRaw = env.ALLOWED_ORIGINS ?? "";
-  for (const origin of allowedOriginsRaw.split(",").map((s) => s.trim()).filter(Boolean)) {
-    origins.add(origin);
-  }
-
-  // REPLIT_DOMAINS: Replit-provided hostnames (host-only, no scheme)
-  // e.g. "foo.repl.co,bar.repl.co"
-  const replitDomainsRaw = env.REPLIT_DOMAINS ?? "";
-  for (const host of replitDomainsRaw.split(",").map((s) => s.trim()).filter(Boolean)) {
+  for (const host of raw.split(",").map((s) => s.trim()).filter(Boolean)) {
     origins.add(`https://${host}`);
   }
-
   if (origins.size === 0) {
     logger.warn(
-      "Neither ALLOWED_ORIGINS nor REPLIT_DOMAINS is set in production — " +
-      "credentialed cross-origin requests will be denied. " +
-      "Set ALLOWED_ORIGINS to your frontend URL(s).",
+      "REPLIT_DOMAINS is not set in production — credentialed cross-origin requests will be denied.",
     );
   }
   return origins; // may be empty; empty == deny all cross-origin credentialed requests
@@ -168,11 +154,6 @@ const liveChatRateLimit = rateLimit({
   limit: 10,                     // max 10 messages per user per minute
   standardHeaders: "draft-7",
   legacyHeaders: false,
-  // Key on the authenticated user ID so each user gets their own bucket.
-  // validate.keyGeneratorIpFallback is disabled because we intentionally
-  // fall back to req.ip for unauthenticated requests, not because of an
-  // oversight — express-rate-limit v8 warns about this pattern by default.
-  validate: { keyGeneratorIpFallback: false },
   keyGenerator: (req) => (req as typeof req & { userId?: string }).userId ?? req.ip ?? "unknown",
   message: { error: "Too many messages. Please wait before sending another." },
   skip: () => !isProduction,
